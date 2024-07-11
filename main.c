@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "transportadora.h"
 
 int main()
 {
+    printf("Hello, World!\n");
     return 0;
 }

@@ -58,19 +58,19 @@ void imprimir_clientes(const Transportadora* transportadora);
 void inicializar_fila(Fila* fila);
 void adicionar_entrega(Fila* fila, int id_entrega);
 ListaEntrega* remover_entrega(Fila* fila);
-bool fila_vazia(const Fila* fila);
+int fila_vazia(const Fila* fila);
 void imprimir_fila(const Fila* fila);
 
 void inicializar_pilha(Pilha* pilha);
 void adicionar_na_pilha(Pilha* pilha, int id_entrega, int tentativas);
 PilhaNode* remover_da_pilha(Pilha* pilha);
-bool pilha_vazia(const Pilha* pilha);
+int pilha_vazia(const Pilha* pilha);
 void imprimir_pilha(const Pilha* pilha);
 
 void inicializar_devolucao(Devolucao* devolucao);
 void adicionar_na_devolucao(Devolucao* devolucao, int id_entrega);
 ListaDevolucao* remover_da_devolucao(Devolucao* devolucao);
-bool devolucao_vazia(const Devolucao* devolucao);
+int devolucao_vazia(const Devolucao* devolucao);
 void imprimir_devolucao(const Devolucao* devolucao);
 
 void inicializar_transportadora(Transportadora* transportadora);
