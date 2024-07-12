@@ -1,0 +1,46 @@
+/* Estilos para a janela principal */
+window {
+    background-color: #F0DBC0; 
+    color: #000000;
+    border-radius: 1px;
+}
+
+/* Estilos para o cabeçalho */
+header {
+    background-color: #ffffff; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+    padding: 10px;
+}
+
+
+
+/* Estilos para os botões */
+button {
+    font-size: 16px;
+    padding: 15px 28px;
+    border-radius: 8px;
+    background-color: #ffae00; /* azul mais claro para os botões */
+    color: #000000;
+    border: none;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #5d58ec; 
+}
+
+button:active {
+    background-color: #5d58ec; 
+}
+
+/* Estilos para o footer (label de status) */
+label#status {
+    background-color: #e9e9e9; 
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #000000;
+}
