@@ -7,6 +7,13 @@
 typedef struct Cliente {
     char nome[50];
     char cpf[14];
+    char estado[3];
+    char cidade[50];
+    char bairro[50];
+    char rua[50];
+    int numero;
+    char telefone[15];
+    char email[50];
     struct Cliente* prox;
 } Cliente;
 

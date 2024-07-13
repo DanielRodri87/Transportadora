@@ -44,3 +44,15 @@ label#status {
     font-weight: bold;
     color: #000000;
 }
+
+
+/* Adicione isso ao seu arquivo CSS */
+#section-title {
+    font-weight: bold;
+    font-size: 1.2em;
+    padding: 10px;
+}
+
+.grid-container > * {
+    margin: 5px 0;
+}
