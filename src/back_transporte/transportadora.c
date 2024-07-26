@@ -3,8 +3,11 @@
 #include "transportadora.h"
 #include <string.h>
 
+static Cliente *lista_clientes = NULL;
+
 // Função para cadastrar um novo cliente
-void cadastrarCliente(Transportadora* transp, const char* nome, const char* cpf, const char* estado, const char* cidade, const char* bairro, const char* rua, int numero, const char* telefone, const char* email) {
+void cadastrarCliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email)
+{
     printf("Entrou na função.\n");
 
     Cliente* novo_cliente = (Cliente*)malloc(sizeof(Cliente));
@@ -26,9 +29,6 @@ void cadastrarCliente(Transportadora* transp, const char* nome, const char* cpf,
     strncpy(novo_cliente->cidade, cidade, sizeof(novo_cliente->cidade) - 1);
     novo_cliente->cidade[sizeof(novo_cliente->cidade) - 1] = '\0';
 
-    strncpy(novo_cliente->bairro, bairro, sizeof(novo_cliente->bairro) - 1);
-    novo_cliente->bairro[sizeof(novo_cliente->bairro) - 1] = '\0';
-
     strncpy(novo_cliente->rua, rua, sizeof(novo_cliente->rua) - 1);
     novo_cliente->rua[sizeof(novo_cliente->rua) - 1] = '\0';
 
@@ -44,12 +44,12 @@ void cadastrarCliente(Transportadora* transp, const char* nome, const char* cpf,
     novo_cliente->prox = NULL;
 
     // Inserir o novo cliente na lista de clientes
-    if (transp->lista_clientes == NULL) {
+    if (lista_clientes == NULL) {
         // Se a lista está vazia, o novo cliente é o primeiro cliente
-        transp->lista_clientes = novo_cliente;
+        lista_clientes = novo_cliente;
     } else {
         // Caso contrário, percorrer a lista até o último cliente e adicionar o novo cliente lá
-        Cliente* atual = transp->lista_clientes;
+        Cliente* atual = lista_clientes;
         while (atual->prox != NULL) {
             atual = atual->prox;
         }

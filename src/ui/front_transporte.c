@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "../back_transporte/transportadora.h"
 
 #define WINDOW_WIDTH 1910
 #define WINDOW_HEIGHT 1070
@@ -91,7 +91,7 @@ void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
     printf("Endereço:\nEstado: %s\nCidade: %s\nRua: %s\nNúmero: %s\n", estado, cidade, rua, numero);
     printf("Contato:\nTelefone: %s\nEmail: %s\n", telefone, email);
 
-    // cadastrarCliente(transp, nome, cpf, estado, cidade, rua, atoi(numero), telefone, email);
+    cadastrarCliente(nome, cpf, estado, cidade, rua, atoi(numero), telefone, email);
 }
 
 void show_cadastro_cliente(GtkButton *button, gpointer user_data)
@@ -235,4 +235,3 @@ void create_main_window(GtkApplication *app, gpointer user_data)
 
     gtk_widget_show_all(window);
 }
-
