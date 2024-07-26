@@ -9,7 +9,6 @@ typedef struct Cliente {
     char cpf[14];
     char estado[3];
     char cidade[50];
-    char bairro[50];
     char rua[50];
     int numero;
     char telefone[15];
@@ -57,7 +56,8 @@ typedef struct Transportadora {
 } Transportadora;
 
 
-void cadastrarCliente(Transportadora* transp, const char* nome, const char* cpf, const char* estado, const char* cidade, const char* bairro, const char* rua, int numero, const char* telefone, const char* email);
+
+void cadastrarCliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email);
 void adicionar_cliente(Transportadora* transportadora, Cliente* cliente);
 Cliente* buscar_cliente(Transportadora* transportadora, const char* cpf);
 void imprimir_clientes(const Transportadora* transportadora);
