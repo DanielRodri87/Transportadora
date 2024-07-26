@@ -15,23 +15,34 @@ void apply_css(GtkWidget *widget, const gchar *css)
     g_object_unref(provider);
 }
 
-void create_card_section(GtkWidget *parent, const char *title, const char **labels, int label_count)
+typedef struct {
+    GtkWidget *entry_nome;
+    GtkWidget *entry_cpf;
+    GtkWidget *entry_estado;
+    GtkWidget *entry_cidade;
+    GtkWidget *entry_rua;
+    GtkWidget *entry_numero;
+    GtkWidget *entry_telefone;
+    GtkWidget *entry_email;
+} FormData;
+
+void create_card_section(GtkWidget *parent, const char *title, const char **labels, int label_count, FormData *form_data)
 {
-    GtkWidget *card = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10); // Aumentei o espaçamento vertical para 10
-    gtk_box_pack_start(GTK_BOX(parent), card, FALSE, FALSE, 0); // Removi o espaçamento antes do card
+    GtkWidget *card = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_box_pack_start(GTK_BOX(parent), card, FALSE, FALSE, 0);
 
     GtkWidget *title_label = gtk_label_new(title);
-    gtk_widget_set_name(title_label, "section-title"); // Adicionei um nome para estilização CSS
-    gtk_box_pack_start(GTK_BOX(card), title_label, FALSE, FALSE, 10); // Adicionei um espaçamento entre o título e o separador
+    gtk_widget_set_name(title_label, "section-title");
+    gtk_box_pack_start(GTK_BOX(card), title_label, FALSE, FALSE, 10);
 
     GtkWidget *separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-    gtk_box_pack_start(GTK_BOX(card), separator, FALSE, FALSE, 10); // Adicionei um espaçamento maior para separador
+    gtk_box_pack_start(GTK_BOX(card), separator, FALSE, FALSE, 10);
 
     GtkWidget *grid = gtk_grid_new();
-    gtk_widget_set_name(grid, "grid-container"); // Adicionei um nome para estilização CSS
+    gtk_widget_set_name(grid, "grid-container");
     gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
     gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
-    gtk_box_pack_start(GTK_BOX(card), grid, FALSE, FALSE, 10); // Adicionei um espaçamento maior para o grid
+    gtk_box_pack_start(GTK_BOX(card), grid, FALSE, FALSE, 10);
 
     for (int i = 0; i < label_count; i += 2) {
         GtkWidget *label1 = gtk_label_new(labels[i]);
@@ -41,6 +52,11 @@ void create_card_section(GtkWidget *parent, const char *title, const char **labe
         GtkWidget *entry1 = gtk_entry_new();
         gtk_grid_attach(GTK_GRID(grid), entry1, 1, i / 2, 1, 1);
 
+        if (strcmp(labels[i], "Nome:") == 0) form_data->entry_nome = entry1;
+        else if (strcmp(labels[i], "Estado:") == 0) form_data->entry_estado = entry1;
+        else if (strcmp(labels[i], "Rua:") == 0) form_data->entry_rua = entry1;
+        else if (strcmp(labels[i], "Telefone:") == 0) form_data->entry_telefone = entry1;
+
         if (i + 1 < label_count) {
             GtkWidget *label2 = gtk_label_new(labels[i + 1]);
             gtk_widget_set_halign(label2, GTK_ALIGN_END);
@@ -48,11 +64,35 @@ void create_card_section(GtkWidget *parent, const char *title, const char **labe
 
             GtkWidget *entry2 = gtk_entry_new();
             gtk_grid_attach(GTK_GRID(grid), entry2, 3, i / 2, 1, 1);
+
+            if (strcmp(labels[i + 1], "CPF:") == 0) form_data->entry_cpf = entry2;
+            else if (strcmp(labels[i + 1], "Cidade:") == 0) form_data->entry_cidade = entry2;
+            else if (strcmp(labels[i + 1], "Número:") == 0) form_data->entry_numero = entry2;
+            else if (strcmp(labels[i + 1], "Email:") == 0) form_data->entry_email = entry2;
         }
     }
 }
 
-void show_cadastro_cliente(GtkButton *button, gpointer user_data) {
+void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
+{
+    FormData *form_data = (FormData *)user_data;
+
+    const char *nome = gtk_entry_get_text(GTK_ENTRY(form_data->entry_nome));
+    const char *cpf = gtk_entry_get_text(GTK_ENTRY(form_data->entry_cpf));
+    const char *estado = gtk_entry_get_text(GTK_ENTRY(form_data->entry_estado));
+    const char *cidade = gtk_entry_get_text(GTK_ENTRY(form_data->entry_cidade));
+    const char *rua = gtk_entry_get_text(GTK_ENTRY(form_data->entry_rua));
+    const char *numero = gtk_entry_get_text(GTK_ENTRY(form_data->entry_numero));
+    const char *telefone = gtk_entry_get_text(GTK_ENTRY(form_data->entry_telefone));
+    const char *email = gtk_entry_get_text(GTK_ENTRY(form_data->entry_email));
+
+    printf("Informações Pessoais:\nNome: %s\nCPF: %s\n", nome, cpf);
+    printf("Endereço:\nEstado: %s\nCidade: %s\nRua: %s\nNúmero: %s\n", estado, cidade, rua, numero);
+    printf("Contato:\nTelefone: %s\nEmail: %s\n", telefone, email);
+}
+
+void show_cadastro_cliente(GtkButton *button, gpointer user_data)
+{
     GtkWidget *client_vbox = (GtkWidget *)user_data;
     GList *children, *iter;
 
@@ -70,22 +110,27 @@ void show_cadastro_cliente(GtkButton *button, gpointer user_data) {
     const gchar *css = "* { background-color: #F0DBC0; color: #333; padding: 20px; border: 1px dashed #ccc; }";
     apply_css(form_vbox, css);
 
+    FormData *form_data = g_malloc(sizeof(FormData));
+    memset(form_data, 0, sizeof(FormData)); // Initialize all pointers to NULL
+
     const char *info_pessoais[] = {"Nome:", "CPF:"};
-    create_card_section(form_vbox, "Informações Pessoais", info_pessoais, 2);
+    create_card_section(form_vbox, "Informações Pessoais", info_pessoais, 2, form_data);
 
     const char *endereco[] = {"Estado:", "Cidade:", "Rua:", "Número:"};
-    create_card_section(form_vbox, "Endereço", endereco, 4);
+    create_card_section(form_vbox, "Endereço", endereco, 4, form_data);
 
     const char *contato[] = {"Telefone:", "Email:"};
-    create_card_section(form_vbox, "Contato", contato, 2);
+    create_card_section(form_vbox, "Contato", contato, 2, form_data);
 
     GtkWidget *confirm_button = gtk_button_new_with_label("Confirmar");
     gtk_box_pack_start(GTK_BOX(form_vbox), confirm_button, FALSE, FALSE, 10);
+    g_signal_connect(confirm_button, "clicked", G_CALLBACK(on_confirm_button_clicked), form_data);
 
     gtk_widget_show_all(client_vbox);
 }
 
-void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data) {
+void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data)
+{
     GtkWidget *client_window;
     GtkWidget *client_vbox;
     GtkWidget *client_grid;
@@ -125,7 +170,8 @@ void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data) {
     gtk_widget_show_all(client_window);
 }
 
-void create_main_window(GtkApplication *app, gpointer user_data) {
+void create_main_window(GtkApplication *app, gpointer user_data)
+{
     GtkWidget *window;
     GtkWidget *vbox;
     GtkWidget *grid;
