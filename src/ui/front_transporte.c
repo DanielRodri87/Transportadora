@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../back_transporte/transportadora.h"
+#include <front_transporte.h>
 
 #define WINDOW_WIDTH 1910
 #define WINDOW_HEIGHT 1070
 #define CLIENT_WINDOW_WIDTH 800
 #define CLIENT_WINDOW_HEIGHT 800
 
+
+// ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
 {
     GtkCssProvider *provider = gtk_css_provider_new();
@@ -138,8 +141,8 @@ void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data)
     GtkWidget *client_vbox;
     GtkWidget *client_grid;
     GtkWidget *button_cadastrar;
+    GtkWidget *button_exibir_clientes;
     GtkWidget *button_buscar;
-    GtkWidget *button_remover;
     GtkWidget *empty_space;
 
     client_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -159,13 +162,14 @@ void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(client_grid), button_cadastrar, 0, 0, 1, 1);
     g_signal_connect(button_cadastrar, "clicked", G_CALLBACK(show_cadastro_cliente), client_vbox);
 
+    button_exibir_clientes = gtk_button_new_with_label("Exibir Clientes");
+    gtk_widget_set_hexpand(button_exibir_clientes, TRUE);
+    gtk_grid_attach(GTK_GRID(client_grid), button_exibir_clientes, 1, 0, 1, 1);
+    g_signal_connect(button_exibir_clientes, "clicked", G_CALLBACK(show_client_list), client_vbox);
+
     button_buscar = gtk_button_new_with_label("Buscar Cliente");
     gtk_widget_set_hexpand(button_buscar, TRUE);
-    gtk_grid_attach(GTK_GRID(client_grid), button_buscar, 1, 0, 1, 1);
-
-    button_remover = gtk_button_new_with_label("Remover Cliente");
-    gtk_widget_set_hexpand(button_remover, TRUE);
-    gtk_grid_attach(GTK_GRID(client_grid), button_remover, 2, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(client_grid), button_buscar, 2, 0, 1, 1);
 
     empty_space = gtk_label_new("");
     gtk_box_pack_start(GTK_BOX(client_vbox), empty_space, TRUE, TRUE, 0);
@@ -234,4 +238,95 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(vbox), logo_box, TRUE, TRUE, 0);
 
     gtk_widget_show_all(window);
+}
+
+// ###################################################### EXIBIR CLIENTES ######################################################
+
+
+void on_delete_button_clicked(GtkButton *button, gpointer user_data)
+{
+    Cliente *cliente = (Cliente *)user_data;
+
+    Cliente **indirect = &lista_clientes;
+    while (*indirect != cliente) {
+        indirect = &(*indirect)->prox;
+    }
+    *indirect = cliente->prox;
+    free(cliente);
+
+    GtkWidget *client_vbox = gtk_widget_get_parent(gtk_widget_get_parent(GTK_WIDGET(button)));
+    show_client_list(NULL, client_vbox);
+}
+
+// Função para mostrar a lista de clientes
+void show_client_list(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *client_vbox = (GtkWidget *)user_data;
+
+    GList *children, *iter;
+
+    children = gtk_container_get_children(GTK_CONTAINER(client_vbox));
+    iter = g_list_next(children);
+    while (iter != NULL) {
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+        iter = g_list_next(iter);
+    }
+    g_list_free(children);
+
+    display_client_list(client_vbox);
+}
+
+
+void display_client_list(GtkWidget *parent)
+{
+    GtkWidget *list_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_box_pack_start(GTK_BOX(parent), list_vbox, TRUE, TRUE, 0);
+
+    const gchar *css = "* { background-color: #F0DBC0; color: #333; padding: 10px; border: 1px solid #ccc; }";
+    apply_css(list_vbox, css);
+
+    Cliente* atual = lista_clientes;
+
+    while (atual != NULL) {
+        GtkWidget *client_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        gtk_box_pack_start(GTK_BOX(list_vbox), client_box, FALSE, FALSE, 0);
+
+        const gchar *client_box_css = "box { border-bottom: 1px solid #aaa; }";
+        apply_css(client_box, client_box_css);
+
+        GtkWidget *label_nome = gtk_label_new(atual->nome);
+        gtk_widget_set_hexpand(label_nome, TRUE);
+        gtk_box_pack_start(GTK_BOX(client_box), label_nome, FALSE, FALSE, 5);
+
+        GtkWidget *label_cpf = gtk_label_new(atual->cpf);
+        gtk_widget_set_hexpand(label_cpf, TRUE);
+        gtk_box_pack_start(GTK_BOX(client_box), label_cpf, FALSE, FALSE, 5);
+
+        GtkWidget *label_email = gtk_label_new(atual->email);
+        gtk_widget_set_hexpand(label_email, TRUE);
+        gtk_box_pack_start(GTK_BOX(client_box), label_email, FALSE, FALSE, 5);
+
+        GtkWidget *delete_button = gtk_button_new_with_label("Delete");
+        gtk_widget_set_name(delete_button, "delete-button");
+        gtk_box_pack_start(GTK_BOX(client_box), delete_button, FALSE, FALSE, 5);
+
+        g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), atual);
+
+        // Estilo para o botão delete
+        const gchar *delete_button_css = 
+            "#delete-button { "
+            "background-color: red; "
+            "border-radius: 8px; "
+            "padding: 5px 10px; "
+            "transition: background-color 0.3s ease; "
+            "}"
+            "#delete-button:hover { "
+            "background-color: darkred; "
+            "}";
+        apply_css(delete_button, delete_button_css);
+
+        atual = atual->prox;
+    }
+
+    gtk_widget_show_all(parent);
 }
