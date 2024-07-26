@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+
 typedef struct Cliente {
     char nome[50];
-    char cpf[14];
+    char cpf[15];
     char estado[3];
     char cidade[50];
     char rua[50];
@@ -55,12 +57,13 @@ typedef struct Transportadora {
     int rotas_feitas;
 } Transportadora;
 
-
+extern Cliente* lista_clientes; 
 
 void cadastrarCliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email);
+void exibir_clientes();
+
 void adicionar_cliente(Transportadora* transportadora, Cliente* cliente);
 Cliente* buscar_cliente(Transportadora* transportadora, const char* cpf);
-void imprimir_clientes(const Transportadora* transportadora);
 
 void inicializar_fila(Fila* fila);
 void adicionar_entrega(Fila* fila, int id_entrega);

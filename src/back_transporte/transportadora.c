@@ -3,7 +3,7 @@
 #include "transportadora.h"
 #include <string.h>
 
-static Cliente *lista_clientes = NULL;
+Cliente* lista_clientes = NULL;
 
 // Função para cadastrar um novo cliente
 void cadastrarCliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email)
@@ -57,4 +57,17 @@ void cadastrarCliente(const char *nome, const char *cpf, const char *estado, con
     }
 
     printf("Saiu da função.\n");
+}
+
+// Função para imprimir a lista de clientes
+void exibir_clientes()
+{
+    Cliente* atual = lista_clientes;
+
+    while (atual != NULL) {
+        printf("Nome: %s\nCPF: %s\nEstado: %s\nCidade: %s\nRua: %s\nNúmero: %d\nTelefone: %s\nEmail: %s\n",
+               atual->nome, atual->cpf, atual->estado, atual->cidade, atual->rua, atual->numero,
+               atual->telefone, atual->email);
+        atual = atual->prox;
+    }
 }
