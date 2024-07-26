@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 #define WINDOW_WIDTH 1910
 #define WINDOW_HEIGHT 1070
 #define CLIENT_WINDOW_WIDTH 800
@@ -89,6 +90,8 @@ void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
     printf("Informações Pessoais:\nNome: %s\nCPF: %s\n", nome, cpf);
     printf("Endereço:\nEstado: %s\nCidade: %s\nRua: %s\nNúmero: %s\n", estado, cidade, rua, numero);
     printf("Contato:\nTelefone: %s\nEmail: %s\n", telefone, email);
+
+    // cadastrarCliente(transp, nome, cpf, estado, cidade, rua, atoi(numero), telefone, email);
 }
 
 void show_cadastro_cliente(GtkButton *button, gpointer user_data)

@@ -57,7 +57,7 @@ typedef struct Transportadora {
 } Transportadora;
 
 
-Cliente* criar_cliente(const char* nome, const char* cpf);
+void cadastrarCliente(Transportadora* transp, const char* nome, const char* cpf, const char* estado, const char* cidade, const char* bairro, const char* rua, int numero, const char* telefone, const char* email);
 void adicionar_cliente(Transportadora* transportadora, Cliente* cliente);
 Cliente* buscar_cliente(Transportadora* transportadora, const char* cpf);
 void imprimir_clientes(const Transportadora* transportadora);
