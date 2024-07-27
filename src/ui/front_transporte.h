@@ -9,5 +9,6 @@ void create_main_window(GtkApplication *app, gpointer user_data);
 void on_delete_button_clicked(GtkButton *button, gpointer user_data);
 void show_client_list(GtkButton *button, gpointer user_data);
 void display_client_list(GtkWidget *parent);
+void on_more_button_clicked(GtkButton *button, gpointer user_data);
 
 #endif // FRONT_TRANSPORTE_H
