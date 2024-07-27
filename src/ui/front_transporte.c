@@ -360,9 +360,12 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
         return;
     }
 
+    char numero[10];
+    sprintf(numero, "%d", cliente->numero);
+
     // Verificar todos os campos relevantes
     if (cliente->nome == NULL || cliente->cpf == NULL || cliente->estado == NULL || 
-        cliente->cidade == NULL || cliente->rua == NULL || cliente->numero == NULL || 
+        cliente->cidade == NULL || cliente->rua == NULL || numero == NULL || 
         cliente->telefone == NULL || cliente->email == NULL) {
         printf("Um ou mais campos do cliente são NULL.\n");
         return;
@@ -410,18 +413,22 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Rua:"), 0, 6, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_rua, 1, 6, 1, 1);
 
+    GtkWidget *label_numero = gtk_label_new(numero);
+    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Número:"), 0, 7, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), label_numero, 1, 7, 1, 1);
+
     GtkWidget *label_section_contact = gtk_label_new("Contato:");
-    gtk_grid_attach(GTK_GRID(grid), label_section_contact, 0, 7, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), label_section_contact, 0, 8, 1, 1);
     gtk_widget_set_halign(label_section_contact, GTK_ALIGN_START);
     gtk_widget_set_margin_bottom(label_section_contact, 10);
 
     GtkWidget *label_telefone = gtk_label_new(cliente->telefone);
-    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Telefone:"), 0, 8, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), label_telefone, 1, 8, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Telefone:"), 0, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), label_telefone, 1, 9, 1, 1);
     
     GtkWidget *label_email = gtk_label_new(cliente->email);
-    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Email:"), 0, 9, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), label_email, 1, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Email:"), 0, 10, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), label_email, 1, 10, 1, 1);
 
     gtk_widget_show_all(dialog);
 
