@@ -9,6 +9,7 @@
 #define CLIENT_WINDOW_WIDTH 800
 #define CLIENT_WINDOW_HEIGHT 800
 
+Transportadora *transportadora = NULL; 
 
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
@@ -19,7 +20,8 @@ void apply_css(GtkWidget *widget, const gchar *css)
     g_object_unref(provider);
 }
 
-typedef struct {
+typedef struct
+{
     GtkWidget *entry_nome;
     GtkWidget *entry_cpf;
     GtkWidget *entry_estado;
@@ -48,7 +50,8 @@ void create_card_section(GtkWidget *parent, const char *title, const char **labe
     gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
     gtk_box_pack_start(GTK_BOX(card), grid, FALSE, FALSE, 10);
 
-    for (int i = 0; i < label_count; i += 2) {
+    for (int i = 0; i < label_count; i += 2)
+    {
         GtkWidget *label1 = gtk_label_new(labels[i]);
         gtk_widget_set_halign(label1, GTK_ALIGN_END);
         gtk_grid_attach(GTK_GRID(grid), label1, 0, i / 2, 1, 1);
@@ -56,12 +59,17 @@ void create_card_section(GtkWidget *parent, const char *title, const char **labe
         GtkWidget *entry1 = gtk_entry_new();
         gtk_grid_attach(GTK_GRID(grid), entry1, 1, i / 2, 1, 1);
 
-        if (strcmp(labels[i], "Nome:") == 0) form_data->entry_nome = entry1;
-        else if (strcmp(labels[i], "Estado:") == 0) form_data->entry_estado = entry1;
-        else if (strcmp(labels[i], "Rua:") == 0) form_data->entry_rua = entry1;
-        else if (strcmp(labels[i], "Telefone:") == 0) form_data->entry_telefone = entry1;
+        if (strcmp(labels[i], "Nome:") == 0)
+            form_data->entry_nome = entry1;
+        else if (strcmp(labels[i], "Estado:") == 0)
+            form_data->entry_estado = entry1;
+        else if (strcmp(labels[i], "Rua:") == 0)
+            form_data->entry_rua = entry1;
+        else if (strcmp(labels[i], "Telefone:") == 0)
+            form_data->entry_telefone = entry1;
 
-        if (i + 1 < label_count) {
+        if (i + 1 < label_count)
+        {
             GtkWidget *label2 = gtk_label_new(labels[i + 1]);
             gtk_widget_set_halign(label2, GTK_ALIGN_END);
             gtk_grid_attach(GTK_GRID(grid), label2, 2, i / 2, 1, 1);
@@ -69,10 +77,14 @@ void create_card_section(GtkWidget *parent, const char *title, const char **labe
             GtkWidget *entry2 = gtk_entry_new();
             gtk_grid_attach(GTK_GRID(grid), entry2, 3, i / 2, 1, 1);
 
-            if (strcmp(labels[i + 1], "CPF:") == 0) form_data->entry_cpf = entry2;
-            else if (strcmp(labels[i + 1], "Cidade:") == 0) form_data->entry_cidade = entry2;
-            else if (strcmp(labels[i + 1], "Número:") == 0) form_data->entry_numero = entry2;
-            else if (strcmp(labels[i + 1], "Email:") == 0) form_data->entry_email = entry2;
+            if (strcmp(labels[i + 1], "CPF:") == 0)
+                form_data->entry_cpf = entry2;
+            else if (strcmp(labels[i + 1], "Cidade:") == 0)
+                form_data->entry_cidade = entry2;
+            else if (strcmp(labels[i + 1], "Número:") == 0)
+                form_data->entry_numero = entry2;
+            else if (strcmp(labels[i + 1], "Email:") == 0)
+                form_data->entry_email = entry2;
         }
     }
 }
@@ -94,7 +106,7 @@ void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
     printf("Endereço:\nEstado: %s\nCidade: %s\nRua: %s\nNúmero: %s\n", estado, cidade, rua, numero);
     printf("Contato:\nTelefone: %s\nEmail: %s\n", telefone, email);
 
-    cadastrarCliente(nome, cpf, estado, cidade, rua, atoi(numero), telefone, email);
+    cadastrar_cliente(nome, cpf, estado, cidade, rua, atoi(numero), telefone, email);
 }
 
 void show_cadastro_cliente(GtkButton *button, gpointer user_data)
@@ -104,7 +116,8 @@ void show_cadastro_cliente(GtkButton *button, gpointer user_data)
 
     children = gtk_container_get_children(GTK_CONTAINER(client_vbox));
     iter = g_list_next(children);
-    while (iter != NULL) {
+    while (iter != NULL)
+    {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
         iter = g_list_next(iter);
     }
@@ -187,6 +200,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     GtkWidget *button_devolucoes;
     GtkWidget *button_pontuacao;
     GtkWidget *button_sair;
+    GtkWidget *button_transportadora;
     GtkWidget *logo_image;
     GtkWidget *logo_box;
     GtkCssProvider *cssProvider;
@@ -217,6 +231,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     button_entregas = gtk_button_new_with_label("Gerenciar Entregas");
     gtk_widget_set_hexpand(button_entregas, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_entregas, 1, 0, 1, 1);
+    g_signal_connect(button_entregas, "clicked", G_CALLBACK(on_gerenciar_transportadora_clicked), NULL);
 
     button_devolucoes = gtk_button_new_with_label("Devoluções");
     gtk_widget_set_hexpand(button_devolucoes, TRUE);
@@ -228,7 +243,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
 
     button_sair = gtk_button_new_with_label("Sair");
     gtk_widget_set_hexpand(button_sair, TRUE);
-    gtk_grid_attach(GTK_GRID(grid), button_sair, 4, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), button_sair, 5, 0, 1, 1);
 
     logo_image = gtk_image_new_from_file("/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/logo_transp.png");
     gtk_image_set_pixel_size(GTK_IMAGE(logo_image), 250);
@@ -237,22 +252,20 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(logo_box), logo_image, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), logo_box, TRUE, TRUE, 0);
 
-
     g_signal_connect(button_sair, "clicked", G_CALLBACK(gtk_main_quit), NULL);
-
 
     gtk_widget_show_all(window);
 }
 
 // ###################################################### EXIBIR CLIENTES ######################################################
 
-
 void on_delete_button_clicked(GtkButton *button, gpointer user_data)
 {
     Cliente *cliente = (Cliente *)user_data;
 
     Cliente **indirect = &lista_clientes;
-    while (*indirect != cliente) {
+    while (*indirect != cliente)
+    {
         indirect = &(*indirect)->prox;
     }
     *indirect = cliente->prox;
@@ -270,7 +283,8 @@ void show_client_list(GtkButton *button, gpointer user_data)
 
     children = gtk_container_get_children(GTK_CONTAINER(client_vbox));
     iter = g_list_next(children);
-    while (iter != NULL) {
+    while (iter != NULL)
+    {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
         iter = g_list_next(iter);
     }
@@ -287,9 +301,10 @@ void display_client_list(GtkWidget *parent)
     const gchar *css = "* { background-color: #F0DBC0; color: #333; padding: 10px; border: 1px solid #ccc; }";
     apply_css(list_vbox, css);
 
-    Cliente* atual = lista_clientes;
+    Cliente *atual = lista_clientes;
 
-    while (atual != NULL) {
+    while (atual != NULL)
+    {
         GtkWidget *client_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         gtk_box_pack_start(GTK_BOX(list_vbox), client_box, FALSE, FALSE, 0);
 
@@ -321,7 +336,7 @@ void display_client_list(GtkWidget *parent)
         g_signal_connect(more_button, "clicked", G_CALLBACK(on_more_button_clicked), atual);
 
         // Estilo para os botões
-        const gchar *buttons_css = 
+        const gchar *buttons_css =
             "#delete-button { "
             "background-color: red; "
             "border-radius: 8px; "
@@ -355,7 +370,8 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
     Cliente *cliente = (Cliente *)user_data;
 
     // Verifique se cliente ou qualquer campo específico é NULL
-    if (cliente == NULL) {
+    if (cliente == NULL)
+    {
         printf("Cliente é NULL.\n");
         return;
     }
@@ -364,9 +380,10 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
     sprintf(numero, "%d", cliente->numero);
 
     // Verificar todos os campos relevantes
-    if (cliente->nome == NULL || cliente->cpf == NULL || cliente->estado == NULL || 
-        cliente->cidade == NULL || cliente->rua == NULL || numero == NULL || 
-        cliente->telefone == NULL || cliente->email == NULL) {
+    if (cliente->nome == NULL || cliente->cpf == NULL || cliente->estado == NULL ||
+        cliente->cidade == NULL || cliente->rua == NULL || numero == NULL ||
+        cliente->telefone == NULL || cliente->email == NULL)
+    {
         printf("Um ou mais campos do cliente são NULL.\n");
         return;
     }
@@ -386,11 +403,11 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(grid), label_section_personal, 0, 0, 1, 1);
     gtk_widget_set_halign(label_section_personal, GTK_ALIGN_START);
     gtk_widget_set_margin_bottom(label_section_personal, 10);
-    
+
     GtkWidget *label_nome = gtk_label_new(cliente->nome);
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Nome:"), 0, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_nome, 1, 1, 1, 1);
-    
+
     GtkWidget *label_cpf = gtk_label_new(cliente->cpf);
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("CPF:"), 0, 2, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_cpf, 1, 2, 1, 1);
@@ -400,15 +417,15 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(grid), label_section_address, 0, 3, 1, 1);
     gtk_widget_set_halign(label_section_address, GTK_ALIGN_START);
     gtk_widget_set_margin_bottom(label_section_address, 10);
-    
+
     GtkWidget *label_estado = gtk_label_new(cliente->estado);
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Estado:"), 0, 4, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_estado, 1, 4, 1, 1);
-    
+
     GtkWidget *label_cidade = gtk_label_new(cliente->cidade);
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Cidade:"), 0, 5, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_cidade, 1, 5, 1, 1);
-    
+
     GtkWidget *label_rua = gtk_label_new(cliente->rua);
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Rua:"), 0, 6, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_rua, 1, 6, 1, 1);
@@ -425,7 +442,7 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
     GtkWidget *label_telefone = gtk_label_new(cliente->telefone);
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Telefone:"), 0, 9, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_telefone, 1, 9, 1, 1);
-    
+
     GtkWidget *label_email = gtk_label_new(cliente->email);
     gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Email:"), 0, 10, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), label_email, 1, 10, 1, 1);
@@ -433,4 +450,160 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_show_all(dialog);
 
     g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+}
+
+// ############################# GERENCIAR TRANSPORTADORA #############################
+void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *transport_window;
+    GtkWidget *transport_vbox;
+    GtkWidget *transport_grid;
+    GtkWidget *button_iniciar_rota;
+    GtkWidget *button_adicionar_cliente;
+    GtkWidget *button_adicionar_produto;
+    GtkWidget *button_mostrar_fila;
+    GtkWidget *button_concluir_fila;
+    GtkWidget *button_concluir_rota;
+    GtkWidget *empty_space;
+
+    transport_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(transport_window), "Gerenciar Transportadora");
+    gtk_window_set_default_size(GTK_WINDOW(transport_window), CLIENT_WINDOW_WIDTH, CLIENT_WINDOW_HEIGHT);
+
+    transport_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(transport_window), transport_vbox);
+
+    transport_grid = gtk_grid_new();
+    gtk_grid_set_column_spacing(GTK_GRID(transport_grid), 10);
+    gtk_grid_set_row_spacing(GTK_GRID(transport_grid), 10);
+    gtk_box_pack_start(GTK_BOX(transport_vbox), transport_grid, FALSE, FALSE, 10);
+
+    button_iniciar_rota = gtk_button_new_with_label("Iniciar Rota");
+    gtk_widget_set_hexpand(button_iniciar_rota, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_iniciar_rota, 0, 0, 1, 1);
+    g_signal_connect(button_iniciar_rota, "clicked", G_CALLBACK(on_iniciar_rota_clicked), NULL);
+
+    button_adicionar_cliente = gtk_button_new_with_label("Adicionar Cliente");
+    gtk_widget_set_hexpand(button_adicionar_cliente, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_adicionar_cliente, 1, 0, 1, 1);
+    g_signal_connect(button_adicionar_cliente, "clicked", G_CALLBACK(on_adicionar_cliente_rota_clicked), NULL);
+
+    button_adicionar_produto = gtk_button_new_with_label("Adicionar Produto");
+    gtk_widget_set_hexpand(button_adicionar_produto, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_adicionar_produto, 2, 0, 1, 1);
+    g_signal_connect(button_adicionar_produto, "clicked", G_CALLBACK(on_adicionar_produto_cliente_clicked), NULL);
+
+    button_mostrar_fila = gtk_button_new_with_label("Mostrar Fila");
+    gtk_widget_set_hexpand(button_mostrar_fila, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_mostrar_fila, 0, 1, 1, 1);
+    g_signal_connect(button_mostrar_fila, "clicked", G_CALLBACK(on_mostrar_fila_clicked), NULL);
+
+    button_concluir_fila = gtk_button_new_with_label("Concluir Fila");
+    gtk_widget_set_hexpand(button_concluir_fila, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_concluir_fila, 1, 1, 1, 1);
+    g_signal_connect(button_concluir_fila, "clicked", G_CALLBACK(on_concluir_fila_clicked), NULL);
+
+    button_concluir_rota = gtk_button_new_with_label("Concluir Rota");
+    gtk_widget_set_hexpand(button_concluir_rota, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_concluir_rota, 2, 1, 1, 1);
+    g_signal_connect(button_concluir_rota, "clicked", G_CALLBACK(on_concluir_rota_clicked), NULL);
+
+    empty_space = gtk_label_new("");
+    gtk_box_pack_start(GTK_BOX(transport_vbox), empty_space, TRUE, TRUE, 0);
+
+    gtk_widget_show_all(transport_window);
+
+    // Inicialize a transportadora global
+    if (transportadora == NULL) {
+        transportadora = (Transportadora *)malloc(sizeof(Transportadora));
+        if (transportadora == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para a transportadora.\n");
+            return;
+        }
+        inicializar_transportadora(transportadora);
+    }
+}
+
+void on_iniciar_rota_clicked(GtkButton *button, gpointer user_data)
+{
+    if (transportadora == NULL)
+    {
+        fprintf(stderr, "Erro: Transportadora não inicializada.\n");
+        return;
+    }
+
+    ativar_rota(transportadora);
+}
+
+
+void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
+{
+    if (transportadora == NULL)
+    {
+        printf("Erro: Transportadora inválida.\n");
+        return;
+    }
+
+    // Criar uma janela de diálogo para pedir o CPF
+    GtkWidget *dialog;
+    GtkWidget *content_area;
+    GtkWidget *entry;
+    GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+    dialog = gtk_dialog_new_with_buttons("Buscar Cliente",
+                                         NULL,
+                                         flags,
+                                         ("_OK"),
+                                         GTK_RESPONSE_ACCEPT,
+                                         ("_Cancel"),
+                                         GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    entry = gtk_entry_new();
+    gtk_entry_set_max_length(GTK_ENTRY(entry), 11);
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "Digite o CPF do Cliente");
+    gtk_container_add(GTK_CONTAINER(content_area), entry);
+
+    gtk_widget_show_all(dialog);
+
+    // Conectar a resposta do diálogo
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        const gchar *cpf = gtk_entry_get_text(GTK_ENTRY(entry));
+
+        // Buscar o cliente
+        Cliente *buscado = buscarClientePorCPF(cpf);
+
+        if (buscado == NULL) {
+            printf("Cliente com CPF %s não encontrado.\n", cpf);
+        } else {
+            // Cadastrar o cliente na rota
+            printf("Cliente encontrado: %s\n", buscado->nome);
+            cadastrar_cliente_rota(transportadora, buscado);
+        }
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
+
+void on_adicionar_produto_cliente_clicked()
+{
+    printf("Adicionar produto\n");
+}
+
+void on_mostrar_fila_clicked()
+{
+    printf("Mostrar fila\n");
+}
+
+void on_concluir_fila_clicked()
+{
+    printf("Concluir fila\n");
+}
+
+void on_concluir_rota_clicked()
+{
+    printf("Concluir rota\n");
 }

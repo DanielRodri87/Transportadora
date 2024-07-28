@@ -11,4 +11,13 @@ void show_client_list(GtkButton *button, gpointer user_data);
 void display_client_list(GtkWidget *parent);
 void on_more_button_clicked(GtkButton *button, gpointer user_data);
 
+void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data);
+void on_iniciar_rota_clicked();
+void on_adicionar_cliente_rota_clicked();
+void on_adicionar_produto_cliente_clicked();
+void on_mostrar_fila_clicked();
+void on_concluir_fila_clicked();
+void on_concluir_rota_clicked();
+
+
 #endif // FRONT_TRANSPORTE_H
