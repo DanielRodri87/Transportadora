@@ -100,17 +100,16 @@ Rota* gerar_rota() {
     return nova_rota;
 }
 
-void inicializar_transportadora(Transportadora *t) {
-    if (t == NULL) {
-        printf("Erro: Ponteiro de transportadora inválido.\n");
-        return;
-    }
+void inicializar_transportadora(Transportadora *t)
+{
     t->score = 0;
     t->entregas_realizadas = 0;
     t->rota_on = NULL;
-    t->lista_clientes = NULL;  // Inicialize como NULL e depois carregue a lista
+    t->lista_clientes = NULL;
     t->fila_devolucao = NULL;
 }
+
+
 
 void ativar_rota(Transportadora *t)
 {
@@ -192,11 +191,32 @@ void cadastrar_cliente_rota(Transportadora *t, Cliente *buscado)
 }
 
 
-void cadastrar_produto_cliente(Transportadora *t)
-{
-    // Implementação básica
-    printf("Produto cadastrado para cliente.\n");
+void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome) {
+    Produto *p = (Produto *)malloc(sizeof(Produto));
+    Produto *aux;
+
+    p->id = id;
+    strcpy(p->nome, nome);
+
+    p->prox = NULL;
+
+    if (buscado != NULL)
+    {
+        buscado->produtos = p;
+        printf("Produto adicionado ao cliente.\n");
+    }
+    else
+    {
+        aux = buscado->produtos;
+        while (aux->prox != NULL)
+        {
+            aux = aux->prox;
+        }
+        aux->prox = p;
+        printf("Produto adicionado ao cliente.\n");
+    }
 }
+
 
 void mostrar_fila_entregas(Transportadora *t)
 {

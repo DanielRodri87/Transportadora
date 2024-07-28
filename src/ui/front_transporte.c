@@ -587,11 +587,71 @@ void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_destroy(dialog);
 }
 
-
-void on_adicionar_produto_cliente_clicked()
+void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
 {
-    printf("Adicionar produto\n");
+    if (transportadora == NULL)
+    {
+        printf("Erro: Transportadora inválida.\n");
+        return;
+    }
+
+    // Criar uma janela de diálogo para pedir o CPF, ID do produto e nome do produto
+    GtkWidget *dialog;
+    GtkWidget *content_area;
+    GtkWidget *cpf_entry, *id_entry, *nome_entry;
+    GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+    dialog = gtk_dialog_new_with_buttons("Adicionar Produto ao Cliente",
+                                         NULL,
+                                         flags,
+                                         ("_OK"),
+                                         GTK_RESPONSE_ACCEPT,
+                                         ("_Cancel"),
+                                         GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    
+    // Criar entradas para CPF, ID do produto e nome do produto
+    cpf_entry = gtk_entry_new();
+    gtk_entry_set_max_length(GTK_ENTRY(cpf_entry), 11);
+    gtk_entry_set_placeholder_text(GTK_ENTRY(cpf_entry), "Digite o CPF do Cliente");
+    gtk_container_add(GTK_CONTAINER(content_area), cpf_entry);
+
+    id_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(id_entry), "Digite o ID do Produto");
+    gtk_container_add(GTK_CONTAINER(content_area), id_entry);
+
+    nome_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(nome_entry), "Digite o Nome do Produto");
+    gtk_container_add(GTK_CONTAINER(content_area), nome_entry);
+
+    gtk_widget_show_all(dialog);
+
+    // Conectar a resposta do diálogo
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        const gchar *cpf = gtk_entry_get_text(GTK_ENTRY(cpf_entry));
+        const gchar *id_str = gtk_entry_get_text(GTK_ENTRY(id_entry));
+        const gchar *nome = gtk_entry_get_text(GTK_ENTRY(nome_entry));
+
+        // Converter id_str para int
+        int id = atoi(id_str);
+
+        // Buscar o cliente
+        Cliente *buscado = buscarClientePorCPF(cpf);
+
+        if (buscado == NULL) {
+            printf("Cliente com CPF %s não encontrado.\n", cpf);
+        } else {
+            // Cadastrar o produto para o cliente
+            cadastrar_produto_cliente(transportadora, buscado, id, nome);
+        }
+    }
+
+    gtk_widget_destroy(dialog);
 }
+
 
 void on_mostrar_fila_clicked()
 {

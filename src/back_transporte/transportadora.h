@@ -14,6 +14,7 @@ typedef struct Cliente {
     int numero;
     char telefone[15];
     char email[50];
+    struct Produto *produtos;
     struct Cliente* prox;
 } Cliente;
 
@@ -50,7 +51,7 @@ Rota *gerar_rota();
 void ativar_rota(Transportadora *t);
 Transportadora* concluir_rota(Transportadora *t);
 void cadastrar_cliente_rota(Transportadora *t, Cliente *buscado);
-void cadastrar_produto_cliente(Transportadora *t);
+void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome);
 void mostrar_fila_entregas(Transportadora *t);
 
 #endif
