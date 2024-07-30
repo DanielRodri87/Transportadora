@@ -864,6 +864,21 @@ void on_concluir_rota_clicked()
     printf("Concluir rota\n");
 }
 
+void on_sim_button_clicked_ida(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    concluir_entrega_ida();
+}
+
+// Função chamada quando o botão Não é clicado
+void on_nao_button_clicked_ida(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    tentar_novamente_entrega_ida();
+}
+
 void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
 {
     if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa1 == NULL)
@@ -878,8 +893,6 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
     dialog = gtk_dialog_new_with_buttons("Entrega na Ida",
                                          NULL,
                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         "_Sim", GTK_RESPONSE_ACCEPT,
-                                         "_Não", GTK_RESPONSE_REJECT,
                                          NULL);
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
@@ -894,6 +907,11 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
 
     // Adicionar cor de fundo
     set_background_color(vbox, "#F0DBC0");
+
+    // Criar e adicionar um título ao diálogo
+    GtkWidget *titulo_label = gtk_label_new("Informações do Cliente");
+    gtk_widget_set_name(titulo_label, "titulo-label");
+    gtk_box_pack_start(GTK_BOX(vbox), titulo_label, FALSE, FALSE, 10);
 
     // Labels para exibir as informações do cliente
     nome_label = gtk_label_new("");
@@ -915,21 +933,33 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
     gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
 
+    // Pergunta de confirmação
+    GtkWidget *pergunta_label = gtk_label_new("A entrega foi realizada com sucesso?");
+    gtk_widget_set_name(pergunta_label, "pergunta-label");
+    gtk_box_pack_start(GTK_BOX(vbox), pergunta_label, FALSE, FALSE, 20);
+
+    // Caixa horizontal para os botões
+    GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
+    gtk_box_pack_start(GTK_BOX(vbox), button_box, FALSE, FALSE, 10);
+
+    // Botões Sim e Não
+    GtkWidget *sim_button = gtk_button_new_with_label("Sim");
+    gtk_widget_set_name(sim_button, "sim-button");
+    g_signal_connect(sim_button, "clicked", G_CALLBACK(on_sim_button_clicked_ida), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), sim_button, TRUE, TRUE, 10);
+
+    GtkWidget *nao_button = gtk_button_new_with_label("Não");
+    gtk_widget_set_name(nao_button, "nao-button");
+    g_signal_connect(nao_button, "clicked", G_CALLBACK(on_nao_button_clicked_ida), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), nao_button, TRUE, TRUE, 10);
+
     gtk_widget_show_all(dialog);
 
     // Exibir o cliente atual
     exibir_cliente_atual();
-
-    // Conectar a resposta do diálogo
-    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-    if (response == GTK_RESPONSE_ACCEPT) {
-        concluir_entrega_ida();
-    } else if (response == GTK_RESPONSE_REJECT) {
-        tentar_novamente_entrega_ida();
-    }
-
-    gtk_widget_destroy(dialog);
 }
+
 
 void concluir_entrega_ida()
 {
@@ -965,6 +995,21 @@ void tentar_novamente_entrega_ida()
     printf("Entrega não realizada. Tentativa adicionada para segunda tentativa.\n");
 }
 
+void on_sim_button_clicked_volta(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    concluir_entrega_volta();
+}
+
+// Função chamada quando o botão Não é clicado na volta
+void on_nao_button_clicked_volta(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    adicionar_lista_devolucao();
+}
+
 void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
 {
     if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa2 == NULL)
@@ -983,8 +1028,6 @@ void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
     dialog = gtk_dialog_new_with_buttons("Entrega na Volta",
                                          NULL,
                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         "_Sim", GTK_RESPONSE_ACCEPT,
-                                         "_Não", GTK_RESPONSE_REJECT,
                                          NULL);
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
@@ -999,6 +1042,11 @@ void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
 
     // Adicionar cor de fundo
     set_background_color(vbox, "#F0DBC0");
+
+    // Criar e adicionar um título ao diálogo
+    GtkWidget *titulo_label = gtk_label_new("Informações do Cliente");
+    gtk_widget_set_name(titulo_label, "titulo-label");
+    gtk_box_pack_start(GTK_BOX(vbox), titulo_label, FALSE, FALSE, 10);
 
     // Labels para exibir as informações do cliente
     nome_label = gtk_label_new("");
@@ -1020,21 +1068,35 @@ void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
     gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
 
+    // Pergunta de confirmação
+    GtkWidget *pergunta_label = gtk_label_new("A entrega foi realizada com sucesso?");
+    gtk_widget_set_name(pergunta_label, "pergunta-label");
+    gtk_box_pack_start(GTK_BOX(vbox), pergunta_label, FALSE, FALSE, 20);
+
+    // Caixa horizontal para os botões
+    GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
+    gtk_box_pack_start(GTK_BOX(vbox), button_box, FALSE, FALSE, 10);
+
+    // Botões Sim e Não
+    GtkWidget *sim_button = gtk_button_new_with_label("Sim");
+    gtk_widget_set_name(sim_button, "sim-button");
+    g_signal_connect(sim_button, "clicked", G_CALLBACK(on_sim_button_clicked_volta), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), sim_button, TRUE, TRUE, 10);
+
+    GtkWidget *nao_button = gtk_button_new_with_label("Não");
+    gtk_widget_set_name(nao_button, "nao-button");
+    g_signal_connect(nao_button, "clicked", G_CALLBACK(on_nao_button_clicked_volta), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), nao_button, TRUE, TRUE, 10);
+
     gtk_widget_show_all(dialog);
 
     // Exibir o cliente atual
     exibir_cliente_atual();
-
-    // Conectar a resposta do diálogo
-    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-    if (response == GTK_RESPONSE_ACCEPT) {
-        concluir_entrega_volta();
-    } else if (response == GTK_RESPONSE_REJECT) {
-        adicionar_lista_devolucao();
-    }
-
-    gtk_widget_destroy(dialog);
 }
+
+
+
 
 void concluir_entrega_volta()
 {
