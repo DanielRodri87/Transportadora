@@ -12,6 +12,9 @@
 Transportadora *transportadora = NULL;
 TransportadoraFila *fila = NULL; 
 
+
+
+
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
 {
@@ -550,6 +553,24 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
         }
         inicializar_transportadora(transportadora);
     }
+
+    // Inicialize a fila de devolução global
+    if (fila == NULL) {
+        fila = (TransportadoraFila *)malloc(sizeof(TransportadoraFila));
+        if (fila == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para a TransportadoraFila.\n");
+            return;
+        }
+        fila->fila_devolucao = (Devolucao *)malloc(sizeof(Devolucao));
+        if (fila->fila_devolucao == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para a Devolucao.\n");
+            free(fila);
+            fila = NULL;
+            return;
+        }
+        fila->fila_devolucao->ini = NULL;
+        fila->fila_devolucao->fim = NULL;
+    }
 }
 
 
@@ -1036,6 +1057,10 @@ void adicionar_lista_devolucao()
 
     // Adicionar cliente à lista de devolução
     ListaDevolucao *novo_item = (ListaDevolucao *)malloc(sizeof(ListaDevolucao));
+    if (novo_item == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para ListaDevolucao.\n");
+        return;
+    }
     novo_item->cliente = cliente_atual;
     novo_item->prox = NULL;
 
