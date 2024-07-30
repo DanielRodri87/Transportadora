@@ -20,5 +20,10 @@ void on_mostrar_fila_clicked();
 void on_concluir_fila_clicked();
 void on_concluir_rota_clicked();
 
+void on_anterior_cliente_clicked(GtkButton *button, gpointer user_data);
+void on_proximo_cliente_clicked(GtkButton *button, gpointer user_data);
+void exibir_cliente_atual();
+void on_mostrar_fila_clicked(GtkButton *button, gpointer user_data);
+
 
 #endif // FRONT_TRANSPORTE_H

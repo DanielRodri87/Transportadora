@@ -40,6 +40,29 @@ typedef struct Transportadora {
     Produto *fila_devolucao;
 } Transportadora;
 
+typedef struct NaoEntregue {
+    Cliente *cliente;
+    struct NaoEntregue *prox;
+} NaoEntregue;
+
+typedef struct Pilha
+{
+    NaoEntregue *topo;
+} Pilha;
+
+
+typedef struct ListaDevolucao {
+    Cliente *cliente;
+    struct ListaDevolucao* prox;
+} ListaDevolucao;
+
+typedef struct Devolucao {
+    ListaDevolucao* ini;
+    ListaDevolucao* fim;
+} Devolucao;
+
+
+
 extern Cliente* lista_clientes; 
 
 void cadastrar_cliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email);

@@ -652,10 +652,144 @@ void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_destroy(dialog);
 }
 
+Cliente *cliente_atual = NULL;
+GtkWidget *dialog = NULL;
+GtkWidget *nome_label, *cpf_label, *estado_label, *cidade_label, *rua_label, *numero_label, *telefone_label, *email_label;
 
-void on_mostrar_fila_clicked()
+void set_background_color(GtkWidget *widget, const char *color)
 {
-    printf("Mostrar fila\n");
+    GdkRGBA bg_color;
+    gdk_rgba_parse(&bg_color, color);
+    gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, &bg_color);
+}
+
+void on_mostrar_fila_clicked(GtkButton *button, gpointer user_data)
+{
+    if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa1 == NULL)
+    {
+        printf("Erro: Fila de clientes vazia ou transportadora não inicializada.\n");
+        return;
+    }
+
+    cliente_atual = transportadora->rota_on->tentativa1;
+
+    // Criar uma janela de diálogo para exibir as informações do cliente
+    dialog = gtk_dialog_new_with_buttons("Fila de Clientes",
+                                         NULL,
+                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                         NULL);
+
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
+
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+    // Caixa vertical para organizar os labels
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
+    gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+    // Adicionar cor de fundo
+    set_background_color(vbox, "#F0DBC0");
+
+    // Labels para exibir as informações do cliente
+    nome_label = gtk_label_new("");
+    cpf_label = gtk_label_new("");
+    estado_label = gtk_label_new("");
+    cidade_label = gtk_label_new("");
+    rua_label = gtk_label_new("");
+    numero_label = gtk_label_new("");
+    telefone_label = gtk_label_new("");
+    email_label = gtk_label_new("");
+
+    // Adicionar labels na vbox
+    gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+
+    // Caixa horizontal para os botões de navegação
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 10);
+
+    // Adicionar cor de fundo
+    set_background_color(hbox, "#F0DBC0");
+
+    // Botões de navegação
+    GtkWidget *ant_button = gtk_button_new_with_label("Anterior");
+    GtkWidget *prox_button = gtk_button_new_with_label("Próximo");
+    gtk_box_pack_start(GTK_BOX(hbox), ant_button, TRUE, TRUE, 10);
+    gtk_box_pack_start(GTK_BOX(hbox), prox_button, TRUE, TRUE, 10);
+
+    // Conectar os sinais dos botões às funções de navegação
+    g_signal_connect(prox_button, "clicked", G_CALLBACK(on_proximo_cliente_clicked), NULL);
+    g_signal_connect(ant_button, "clicked", G_CALLBACK(on_anterior_cliente_clicked), NULL);
+
+    gtk_widget_show_all(dialog);
+
+    // Exibir o primeiro cliente
+    exibir_cliente_atual();
+}
+
+void exibir_cliente_atual()
+{
+    if (cliente_atual == NULL) {
+        return;
+    }
+
+    char buffer[256];
+
+    snprintf(buffer, sizeof(buffer), "Nome: %s", cliente_atual->nome);
+    gtk_label_set_text(GTK_LABEL(nome_label), buffer);
+
+    snprintf(buffer, sizeof(buffer), "CPF: %s", cliente_atual->cpf);
+    gtk_label_set_text(GTK_LABEL(cpf_label), buffer);
+
+    snprintf(buffer, sizeof(buffer), "Estado: %s", cliente_atual->estado);
+    gtk_label_set_text(GTK_LABEL(estado_label), buffer);
+
+    snprintf(buffer, sizeof(buffer), "Cidade: %s", cliente_atual->cidade);
+    gtk_label_set_text(GTK_LABEL(cidade_label), buffer);
+
+    snprintf(buffer, sizeof(buffer), "Rua: %s", cliente_atual->rua);
+    gtk_label_set_text(GTK_LABEL(rua_label), buffer);
+
+    snprintf(buffer, sizeof(buffer), "Número: %d", cliente_atual->numero);
+    gtk_label_set_text(GTK_LABEL(numero_label), buffer);
+
+    snprintf(buffer, sizeof(buffer), "Telefone: %s", cliente_atual->telefone);
+    gtk_label_set_text(GTK_LABEL(telefone_label), buffer);
+
+    snprintf(buffer, sizeof(buffer), "Email: %s", cliente_atual->email);
+    gtk_label_set_text(GTK_LABEL(email_label), buffer);
+}
+
+void on_proximo_cliente_clicked(GtkButton *button, gpointer user_data)
+{
+    if (cliente_atual != NULL && cliente_atual->prox != NULL) {
+        cliente_atual = cliente_atual->prox;
+        exibir_cliente_atual();
+    }
+}
+
+void on_anterior_cliente_clicked(GtkButton *button, gpointer user_data)
+{
+    if (cliente_atual != NULL && transportadora->rota_on != NULL) {
+        Cliente *anterior = NULL;
+        Cliente *atual = transportadora->rota_on->tentativa1;
+        while (atual != cliente_atual) {
+            anterior = atual;
+            atual = atual->prox;
+        }
+        if (anterior != NULL) {
+            cliente_atual = anterior;
+            exibir_cliente_atual();
+        }
+    }
 }
 
 void on_concluir_fila_clicked()
