@@ -28,4 +28,8 @@ void exibir_cliente_atual();
 void on_mostrar_fila_clicked(GtkButton *button, gpointer user_data);
 
 
+void concluir_entrega_ida();
+void tentar_novamente_entrega_ida();
+
+
 #endif // FRONT_TRANSPORTE_H
