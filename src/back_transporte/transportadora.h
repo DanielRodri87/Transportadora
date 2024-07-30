@@ -3,8 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-
+#include <string.h>
 
 typedef struct Cliente {
     char nome[50];
@@ -15,31 +14,45 @@ typedef struct Cliente {
     int numero;
     char telefone[15];
     char email[50];
+    struct Produto *produtos;
     struct Cliente* prox;
 } Cliente;
 
-typedef struct ListaEntrega {
-    int id_entrega;
-    struct ListaEntrega* prox;
-} ListaEntrega;
+typedef struct Produto {
+    int id;
+    char nome[30];
+    struct Produto *prox; 
+} Produto;
 
-typedef struct Fila {
-    ListaEntrega* ini;
-    ListaEntrega* fim;
-} Fila;
-
-typedef struct PilhaNode {
-    int id_entrega;
+typedef struct Rota {
+    Cliente *tentativa1;
+    Cliente *tentativa2;
     int tentativas;
-    struct PilhaNode* prox;
-} PilhaNode;
+    int pessoas;
+    int entregas_relizadas;
+} Rota;
 
-typedef struct Pilha {
-    PilhaNode* topo;
+typedef struct Transportadora {
+    int score;
+    int entregas_realizadas;
+    Rota *rota_on;
+    Cliente *lista_clientes;
+    Produto *fila_devolucao;
+} Transportadora;
+
+typedef struct NaoEntregue {
+    Cliente *cliente;
+    struct NaoEntregue *prox;
+} NaoEntregue;
+
+typedef struct Pilha
+{
+    NaoEntregue *topo;
 } Pilha;
 
+
 typedef struct ListaDevolucao {
-    int id_entrega;
+    Cliente *cliente;
     struct ListaDevolucao* prox;
 } ListaDevolucao;
 
@@ -48,44 +61,20 @@ typedef struct Devolucao {
     ListaDevolucao* fim;
 } Devolucao;
 
-typedef struct Transportadora {
-    Cliente* lista_clientes;
-    Fila fila_entregas;
-    Pilha pilha_nao_entregues;
-    Devolucao fila_devolucao;
-    int pontuacao_total;
-    int rotas_feitas;
-} Transportadora;
+
 
 extern Cliente* lista_clientes; 
 
-void cadastrarCliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email);
+void cadastrar_cliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email);
 void exibir_clientes();
+Cliente *buscarClientePorCPF(const char *cpf);
 
-void adicionar_cliente(Transportadora* transportadora, Cliente* cliente);
-Cliente* buscar_cliente(Transportadora* transportadora, const char* cpf);
+void inicializar_transportadora(Transportadora *t);
+Rota *gerar_rota();
+void ativar_rota(Transportadora *t);
+Transportadora* concluir_rota(Transportadora *t);
+void cadastrar_cliente_rota(Transportadora *t, Cliente *buscado);
+void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome);
+void mostrar_fila_entregas(Transportadora *t);
 
-void inicializar_fila(Fila* fila);
-void adicionar_entrega(Fila* fila, int id_entrega);
-ListaEntrega* remover_entrega(Fila* fila);
-int fila_vazia(const Fila* fila);
-void imprimir_fila(const Fila* fila);
-
-void inicializar_pilha(Pilha* pilha);
-void adicionar_na_pilha(Pilha* pilha, int id_entrega, int tentativas);
-PilhaNode* remover_da_pilha(Pilha* pilha);
-int pilha_vazia(const Pilha* pilha);
-void imprimir_pilha(const Pilha* pilha);
-
-void inicializar_devolucao(Devolucao* devolucao);
-void adicionar_na_devolucao(Devolucao* devolucao, int id_entrega);
-ListaDevolucao* remover_da_devolucao(Devolucao* devolucao);
-int devolucao_vazia(const Devolucao* devolucao);
-void imprimir_devolucao(const Devolucao* devolucao);
-
-void inicializar_transportadora(Transportadora* transportadora);
-void processar_entregas(Transportadora* transportadora);
-void calcular_escore(Transportadora* transportadora);
-void imprimir_transportadora(const Transportadora* transportadora);
-
-#endif 
+#endif
