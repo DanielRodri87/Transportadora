@@ -17,7 +17,6 @@ void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
 void on_adicionar_cliente_rota_clicked();
 void on_adicionar_produto_cliente_clicked();
 void on_mostrar_fila_clicked();
-void on_concluir_fila_clicked();
 void on_concluir_rota_clicked();
 void on_entrega_volta_clicked();
 void on_entrega_ida_clicked();

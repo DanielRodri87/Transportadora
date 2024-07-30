@@ -519,10 +519,6 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(transport_grid), button_mostrar_fila, 0, 1, 1, 1);
     g_signal_connect(button_mostrar_fila, "clicked", G_CALLBACK(on_mostrar_fila_clicked), NULL);
 
-    button_concluir_fila = gtk_button_new_with_label("Concluir Fila");
-    gtk_widget_set_hexpand(button_concluir_fila, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_concluir_fila, 1, 1, 1, 1);
-    g_signal_connect(button_concluir_fila, "clicked", G_CALLBACK(on_concluir_fila_clicked), NULL);
 
     button_concluir_rota = gtk_button_new_with_label("Concluir Rota");
     gtk_widget_set_hexpand(button_concluir_rota, TRUE);
@@ -854,14 +850,16 @@ void on_anterior_cliente_clicked(GtkButton *button, gpointer user_data)
     }
 }
 
-void on_concluir_fila_clicked()
-{
-    printf("Concluir fila\n");
-}
 
 void on_concluir_rota_clicked()
 {
-    printf("Concluir rota\n");
+    if (transportadora == NULL || transportadora->rota_on == NULL)
+    {
+        printf("Erro: Transportadora ou rota não inicializada.\n");
+        return;
+    }
+
+    concluir_rota(transportadora);
 }
 
 void on_sim_button_clicked_ida(GtkButton *button, gpointer user_data)
