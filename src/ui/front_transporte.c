@@ -9,7 +9,8 @@
 #define CLIENT_WINDOW_WIDTH 800
 #define CLIENT_WINDOW_HEIGHT 800
 
-Transportadora *transportadora = NULL; 
+Transportadora *transportadora = NULL;
+TransportadoraFila *fila = NULL; 
 
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
@@ -943,7 +944,109 @@ void tentar_novamente_entrega_ida()
     printf("Entrega não realizada. Tentativa adicionada para segunda tentativa.\n");
 }
 
-void on_entrega_volta_clicked()
+void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
 {
-    printf("Entrega volta\n");
+    if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa2 == NULL)
+    {
+        printf("Erro: Pilha de tentativas vazia ou transportadora não inicializada.\n");
+        return;
+    }
+
+    // Retirar o último cliente da pilha de tentativas
+    NaoEntregue *tentativa = transportadora->rota_on->tentativa2;
+    transportadora->rota_on->tentativa2 = tentativa->prox;
+    cliente_atual = tentativa->cliente;
+    free(tentativa);
+
+    // Criar uma janela de diálogo para exibir as informações do cliente e perguntar sobre a entrega
+    dialog = gtk_dialog_new_with_buttons("Entrega na Volta",
+                                         NULL,
+                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                         "_Sim", GTK_RESPONSE_ACCEPT,
+                                         "_Não", GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
+
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+    // Caixa vertical para organizar os labels
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
+    gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+    // Adicionar cor de fundo
+    set_background_color(vbox, "#F0DBC0");
+
+    // Labels para exibir as informações do cliente
+    nome_label = gtk_label_new("");
+    cpf_label = gtk_label_new("");
+    estado_label = gtk_label_new("");
+    cidade_label = gtk_label_new("");
+    rua_label = gtk_label_new("");
+    numero_label = gtk_label_new("");
+    telefone_label = gtk_label_new("");
+    email_label = gtk_label_new("");
+
+    // Adicionar labels na vbox
+    gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+
+    gtk_widget_show_all(dialog);
+
+    // Exibir o cliente atual
+    exibir_cliente_atual();
+
+    // Conectar a resposta do diálogo
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        concluir_entrega_volta();
+    } else if (response == GTK_RESPONSE_REJECT) {
+        adicionar_lista_devolucao();
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
+void concluir_entrega_volta()
+{
+    if (cliente_atual == NULL) {
+        return;
+    }
+
+    // Liberar memória do cliente atual
+    free(cliente_atual);
+    cliente_atual = NULL;
+
+    printf("Entrega na volta realizada com sucesso.\n");
+}
+
+void adicionar_lista_devolucao()
+{
+    if (cliente_atual == NULL) {
+        return;
+    }
+
+    // Adicionar cliente à lista de devolução
+    ListaDevolucao *novo_item = (ListaDevolucao *)malloc(sizeof(ListaDevolucao));
+    novo_item->cliente = cliente_atual;
+    novo_item->prox = NULL;
+
+    if (fila->fila_devolucao->fim == NULL) {
+        fila->fila_devolucao->ini = novo_item;
+        fila->fila_devolucao->fim = novo_item;
+    } else {
+        fila->fila_devolucao->fim->prox = novo_item;
+        fila->fila_devolucao->fim = novo_item;
+    }
+
+    cliente_atual = NULL;
+    printf("Cliente adicionado à lista de devolução.\n");
 }
