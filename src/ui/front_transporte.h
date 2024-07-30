@@ -20,6 +20,8 @@ void on_mostrar_fila_clicked();
 void on_concluir_rota_clicked();
 void on_entrega_volta_clicked();
 void on_entrega_ida_clicked();
+void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data);
+
 
 void on_anterior_cliente_clicked(GtkButton *button, gpointer user_data);
 void on_proximo_cliente_clicked(GtkButton *button, gpointer user_data);

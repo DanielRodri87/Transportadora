@@ -485,6 +485,7 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     GtkWidget *button_concluir_rota;
     GtkWidget *button_entrega_ida;
     GtkWidget *button_entrega_volta;
+    GtkWidget *button_exibir_produtos;
     GtkWidget *empty_space;
 
     transport_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -519,6 +520,10 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(transport_grid), button_mostrar_fila, 0, 1, 1, 1);
     g_signal_connect(button_mostrar_fila, "clicked", G_CALLBACK(on_mostrar_fila_clicked), NULL);
 
+    button_exibir_produtos = gtk_button_new_with_label("Exibir Produtos");
+    gtk_widget_set_hexpand(button_exibir_produtos, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_exibir_produtos, 1, 1, 1, 1);
+    g_signal_connect(button_exibir_produtos, "clicked", G_CALLBACK(on_exibir_produtos_clicked), NULL);
 
     button_concluir_rota = gtk_button_new_with_label("Concluir Rota");
     gtk_widget_set_hexpand(button_concluir_rota, TRUE);
@@ -1134,4 +1139,143 @@ void adicionar_lista_devolucao()
 
     cliente_atual = NULL;
     printf("Cliente adicionado à lista de devolução.\n");
+}
+
+// void exibir_cliente_atual()
+// {
+//     if (cliente_atual == NULL)
+//         return;
+
+//     // Atualiza os labels com as informações do cliente
+//     gtk_label_set_text(GTK_LABEL(nome_label), cliente_atual->nome);
+//     gtk_label_set_text(GTK_LABEL(cpf_label), cliente_atual->cpf);
+//     gtk_label_set_text(GTK_LABEL(estado_label), cliente_atual->estado);
+//     gtk_label_set_text(GTK_LABEL(cidade_label), cliente_atual->cidade);
+//     gtk_label_set_text(GTK_LABEL(rua_label), cliente_atual->rua);
+//     char numero_str[10];
+//     sprintf(numero_str, "%d", cliente_atual->numero);
+//     gtk_label_set_text(GTK_LABEL(numero_label), numero_str);
+//     gtk_label_set_text(GTK_LABEL(telefone_label), cliente_atual->telefone);
+//     gtk_label_set_text(GTK_LABEL(email_label), cliente_atual->email);
+// }
+
+void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *cpf_dialog, *cpf_entry;
+    GtkWidget *content_area;
+    GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+    // Cria uma janela de diálogo para solicitar o CPF
+    cpf_dialog = gtk_dialog_new_with_buttons("Digite o CPF do Cliente",
+                                             NULL,
+                                             flags,
+                                             ("OK"),
+                                             GTK_RESPONSE_OK,
+                                             ("Cancelar"),
+                                             GTK_RESPONSE_CANCEL,
+                                             NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(cpf_dialog));
+    cpf_entry = gtk_entry_new();
+    gtk_entry_set_max_length(GTK_ENTRY(cpf_entry), 14);
+    gtk_container_add(GTK_CONTAINER(content_area), cpf_entry);
+
+    gtk_widget_show_all(cpf_dialog);
+
+    // Lida com a resposta do usuário
+    gint response = gtk_dialog_run(GTK_DIALOG(cpf_dialog));
+    if (response == GTK_RESPONSE_OK)
+    {
+        const gchar *cpf = gtk_entry_get_text(GTK_ENTRY(cpf_entry));
+        Cliente *cliente = lista_clientes;
+
+        // Busca o cliente pelo CPF
+        while (cliente != NULL)
+        {
+            if (strcmp(cliente->cpf, cpf) == 0)
+            {
+                cliente_atual = cliente;
+                break;
+            }
+            cliente = cliente->prox;
+        }
+
+        if (cliente_atual != NULL)
+        {
+            // Criar uma janela de diálogo para exibir os produtos do cliente
+            dialog = gtk_dialog_new_with_buttons("Produtos do Cliente",
+                                                 NULL,
+                                                 GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                 NULL);
+
+            gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
+
+            GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+            // Caixa vertical para organizar os labels
+            GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+            gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
+            gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+            gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+            // Adicionar cor de fundo
+            set_background_color(vbox, "#F0DBC0");
+
+            // Labels para exibir as informações do cliente
+            nome_label = gtk_label_new("");
+            cpf_label = gtk_label_new("");
+            estado_label = gtk_label_new("");
+            cidade_label = gtk_label_new("");
+            rua_label = gtk_label_new("");
+            numero_label = gtk_label_new("");
+            telefone_label = gtk_label_new("");
+            email_label = gtk_label_new("");
+
+            // Adicionar labels na vbox
+            gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+
+            // Exibir as informações do cliente
+            exibir_cliente_atual();
+
+            // Caixa vertical para os produtos
+            GtkWidget *prod_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+            gtk_container_set_border_width(GTK_CONTAINER(prod_vbox), 10);
+            gtk_box_set_homogeneous(GTK_BOX(prod_vbox), FALSE);
+            gtk_container_add(GTK_CONTAINER(content_area), prod_vbox);
+
+            // Adicionar cor de fundo
+            set_background_color(prod_vbox, "#F0DBC0");
+
+            // Iterar sobre os produtos do cliente e adicioná-los à vbox
+            Produto *produto_atual = cliente_atual->produtos;
+            while (produto_atual != NULL)
+            {
+                GtkWidget *produto_label = gtk_label_new(produto_atual->nome);
+                gtk_box_pack_start(GTK_BOX(prod_vbox), produto_label, FALSE, FALSE, 5);
+                produto_atual = produto_atual->prox;
+            }
+
+            gtk_widget_show_all(dialog);
+        }
+        else
+        {
+            // Exibir mensagem de erro caso o cliente não seja encontrado
+            GtkWidget *error_dialog = gtk_message_dialog_new(GTK_WINDOW(cpf_dialog),
+                                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                             GTK_MESSAGE_ERROR,
+                                                             GTK_BUTTONS_CLOSE,
+                                                             "Cliente não encontrado.");
+            gtk_dialog_run(GTK_DIALOG(error_dialog));
+            gtk_widget_destroy(error_dialog);
+        }
+    }
+
+    gtk_widget_destroy(cpf_dialog);
 }

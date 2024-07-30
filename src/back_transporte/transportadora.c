@@ -2,7 +2,7 @@
 
 // Definição da lista de clientes global
 Cliente *lista_clientes = NULL;
-
+Produto *lista_produtos = NULL;
 // ########################### CLIENTES ###############################
 
 void cadastrar_cliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email)
@@ -214,6 +214,15 @@ void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id
         }
         aux->prox = p;
         printf("Produto adicionado ao cliente.\n");
+    }
+}
+
+void exibir_produtos_cliente(Cliente *c)
+{
+    Produto *p = c->produtos;
+    while (p != NULL) {
+        printf("ID: %d\nNome: %s\n", p->id, p->nome);
+        p = p->prox;
     }
 }
 
