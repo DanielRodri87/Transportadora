@@ -91,6 +91,8 @@ void create_card_section(GtkWidget *parent, const char *title, const char **labe
 
 void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+
     FormData *form_data = (FormData *)user_data;
 
     const char *nome = gtk_entry_get_text(GTK_ENTRY(form_data->entry_nome));
@@ -111,6 +113,9 @@ void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
 
 void show_cadastro_cliente(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+    (void)user_data;
+
     GtkWidget *client_vbox = (GtkWidget *)user_data;
     GList *children, *iter;
 
@@ -464,6 +469,8 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     GtkWidget *button_mostrar_fila;
     GtkWidget *button_concluir_fila;
     GtkWidget *button_concluir_rota;
+    GtkWidget *button_entrega_ida;
+    GtkWidget *button_entrega_volta;
     GtkWidget *empty_space;
 
     transport_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -508,6 +515,16 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(transport_grid), button_concluir_rota, 2, 1, 1, 1);
     g_signal_connect(button_concluir_rota, "clicked", G_CALLBACK(on_concluir_rota_clicked), NULL);
 
+    button_entrega_ida = gtk_button_new_with_label("Entrega Ida");
+    gtk_widget_set_hexpand(button_entrega_ida, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_entrega_ida, 0, 2, 1, 1);
+    g_signal_connect(button_entrega_ida, "clicked", G_CALLBACK(on_entrega_ida_clicked), NULL);
+
+    button_entrega_volta = gtk_button_new_with_label("Entrega Volta");
+    gtk_widget_set_hexpand(button_entrega_volta, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_entrega_volta, 1, 2, 1, 1);
+    g_signal_connect(button_entrega_volta, "clicked", G_CALLBACK(on_entrega_volta_clicked), NULL);
+
     empty_space = gtk_label_new("");
     gtk_box_pack_start(GTK_BOX(transport_vbox), empty_space, TRUE, TRUE, 0);
 
@@ -523,6 +540,7 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
         inicializar_transportadora(transportadora);
     }
 }
+
 
 void on_iniciar_rota_clicked(GtkButton *button, gpointer user_data)
 {
@@ -800,4 +818,14 @@ void on_concluir_fila_clicked()
 void on_concluir_rota_clicked()
 {
     printf("Concluir rota\n");
+}
+
+void on_entrega_ida_clicked()
+{
+    printf("Entrega ida\n");
+}
+
+void on_entrega_volta_clicked()
+{
+    printf("Entrega volta\n");
 }
