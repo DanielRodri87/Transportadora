@@ -9,7 +9,11 @@
 #define CLIENT_WINDOW_WIDTH 800
 #define CLIENT_WINDOW_HEIGHT 800
 
-Transportadora *transportadora = NULL; 
+Transportadora *transportadora = NULL;
+TransportadoraFila *fila = NULL; 
+
+
+
 
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
@@ -163,6 +167,9 @@ void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data)
     GtkWidget *button_buscar;
     GtkWidget *empty_space;
 
+    (void)button;
+    (void)user_data;
+
     client_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(client_window), "Gerenciar Clientes");
     gtk_window_set_default_size(GTK_WINDOW(client_window), CLIENT_WINDOW_WIDTH, CLIENT_WINDOW_HEIGHT);
@@ -205,10 +212,11 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     GtkWidget *button_devolucoes;
     GtkWidget *button_pontuacao;
     GtkWidget *button_sair;
-    GtkWidget *button_transportadora;
     GtkWidget *logo_image;
     GtkWidget *logo_box;
     GtkCssProvider *cssProvider;
+
+    (void)user_data;
 
     cssProvider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(cssProvider, "/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/style.css", NULL);
@@ -266,6 +274,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
 
 void on_delete_button_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
     Cliente *cliente = (Cliente *)user_data;
 
     Cliente **indirect = &lista_clientes;
@@ -282,6 +291,7 @@ void on_delete_button_clicked(GtkButton *button, gpointer user_data)
 
 void show_client_list(GtkButton *button, gpointer user_data)
 {
+    (void)button;
     GtkWidget *client_vbox = (GtkWidget *)user_data;
 
     GList *children, *iter;
@@ -372,6 +382,7 @@ void display_client_list(GtkWidget *parent)
 // ####################################### MAIS INFORMAÇÕES #######################################
 void on_more_button_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
     Cliente *cliente = (Cliente *)user_data;
 
     // Verifique se cliente ou qualquer campo específico é NULL
@@ -460,6 +471,9 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
 // ############################# GERENCIAR TRANSPORTADORA #############################
 void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+    (void)user_data;
+
     GtkWidget *transport_window;
     GtkWidget *transport_vbox;
     GtkWidget *transport_grid;
@@ -539,11 +553,32 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
         }
         inicializar_transportadora(transportadora);
     }
+
+    // Inicialize a fila de devolução global
+    if (fila == NULL) {
+        fila = (TransportadoraFila *)malloc(sizeof(TransportadoraFila));
+        if (fila == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para a TransportadoraFila.\n");
+            return;
+        }
+        fila->fila_devolucao = (Devolucao *)malloc(sizeof(Devolucao));
+        if (fila->fila_devolucao == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para a Devolucao.\n");
+            free(fila);
+            fila = NULL;
+            return;
+        }
+        fila->fila_devolucao->ini = NULL;
+        fila->fila_devolucao->fim = NULL;
+    }
 }
 
 
 void on_iniciar_rota_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+    (void)user_data;
+
     if (transportadora == NULL)
     {
         fprintf(stderr, "Erro: Transportadora não inicializada.\n");
@@ -556,6 +591,9 @@ void on_iniciar_rota_clicked(GtkButton *button, gpointer user_data)
 
 void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+    (void)user_data;
+
     if (transportadora == NULL)
     {
         printf("Erro: Transportadora inválida.\n");
@@ -607,6 +645,9 @@ void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
 
 void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+    (void)user_data;
+
     if (transportadora == NULL)
     {
         printf("Erro: Transportadora inválida.\n");
@@ -788,6 +829,9 @@ void exibir_cliente_atual()
 
 void on_proximo_cliente_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+    (void)user_data;
+    
     if (cliente_atual != NULL && cliente_atual->prox != NULL) {
         cliente_atual = cliente_atual->prox;
         exibir_cliente_atual();
@@ -820,12 +864,214 @@ void on_concluir_rota_clicked()
     printf("Concluir rota\n");
 }
 
-void on_entrega_ida_clicked()
+void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
 {
-    printf("Entrega ida\n");
+    if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa1 == NULL)
+    {
+        printf("Erro: Fila de clientes vazia ou transportadora não inicializada.\n");
+        return;
+    }
+
+    cliente_atual = transportadora->rota_on->tentativa1;
+
+    // Criar uma janela de diálogo para exibir as informações do cliente e perguntar sobre a entrega
+    dialog = gtk_dialog_new_with_buttons("Entrega na Ida",
+                                         NULL,
+                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                         "_Sim", GTK_RESPONSE_ACCEPT,
+                                         "_Não", GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
+
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+    // Caixa vertical para organizar os labels
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
+    gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+    // Adicionar cor de fundo
+    set_background_color(vbox, "#F0DBC0");
+
+    // Labels para exibir as informações do cliente
+    nome_label = gtk_label_new("");
+    cpf_label = gtk_label_new("");
+    estado_label = gtk_label_new("");
+    cidade_label = gtk_label_new("");
+    rua_label = gtk_label_new("");
+    numero_label = gtk_label_new("");
+    telefone_label = gtk_label_new("");
+    email_label = gtk_label_new("");
+
+    // Adicionar labels na vbox
+    gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+
+    gtk_widget_show_all(dialog);
+
+    // Exibir o cliente atual
+    exibir_cliente_atual();
+
+    // Conectar a resposta do diálogo
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        concluir_entrega_ida();
+    } else if (response == GTK_RESPONSE_REJECT) {
+        tentar_novamente_entrega_ida();
+    }
+
+    gtk_widget_destroy(dialog);
 }
 
-void on_entrega_volta_clicked()
+void concluir_entrega_ida()
 {
-    printf("Entrega volta\n");
+    if (cliente_atual == NULL) {
+        return;
+    }
+
+    // Remover cliente da lista de entregas
+    transportadora->rota_on->tentativa1 = cliente_atual->prox;
+    free(cliente_atual);
+    cliente_atual = transportadora->rota_on->tentativa1;
+
+    printf("Entrega realizada com sucesso.\n");
+}
+
+void tentar_novamente_entrega_ida()
+{
+    if (cliente_atual == NULL) {
+        return;
+    }
+
+    // Adicionar cliente na pilha de tentativas
+    NaoEntregue *nova_tentativa = (NaoEntregue *)malloc(sizeof(NaoEntregue));
+    nova_tentativa->cliente = cliente_atual;
+    nova_tentativa->prox = transportadora->rota_on->tentativa2;
+    transportadora->rota_on->tentativa2 = nova_tentativa;
+
+    // Remover cliente da lista de entregas
+    transportadora->rota_on->tentativa1 = cliente_atual->prox;
+    cliente_atual->prox = NULL;
+    cliente_atual = transportadora->rota_on->tentativa1;
+
+    printf("Entrega não realizada. Tentativa adicionada para segunda tentativa.\n");
+}
+
+void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
+{
+    if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa2 == NULL)
+    {
+        printf("Erro: Pilha de tentativas vazia ou transportadora não inicializada.\n");
+        return;
+    }
+
+    // Retirar o último cliente da pilha de tentativas
+    NaoEntregue *tentativa = transportadora->rota_on->tentativa2;
+    transportadora->rota_on->tentativa2 = tentativa->prox;
+    cliente_atual = tentativa->cliente;
+    free(tentativa);
+
+    // Criar uma janela de diálogo para exibir as informações do cliente e perguntar sobre a entrega
+    dialog = gtk_dialog_new_with_buttons("Entrega na Volta",
+                                         NULL,
+                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                         "_Sim", GTK_RESPONSE_ACCEPT,
+                                         "_Não", GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
+
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+    // Caixa vertical para organizar os labels
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
+    gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+    // Adicionar cor de fundo
+    set_background_color(vbox, "#F0DBC0");
+
+    // Labels para exibir as informações do cliente
+    nome_label = gtk_label_new("");
+    cpf_label = gtk_label_new("");
+    estado_label = gtk_label_new("");
+    cidade_label = gtk_label_new("");
+    rua_label = gtk_label_new("");
+    numero_label = gtk_label_new("");
+    telefone_label = gtk_label_new("");
+    email_label = gtk_label_new("");
+
+    // Adicionar labels na vbox
+    gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+
+    gtk_widget_show_all(dialog);
+
+    // Exibir o cliente atual
+    exibir_cliente_atual();
+
+    // Conectar a resposta do diálogo
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        concluir_entrega_volta();
+    } else if (response == GTK_RESPONSE_REJECT) {
+        adicionar_lista_devolucao();
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
+void concluir_entrega_volta()
+{
+    if (cliente_atual == NULL) {
+        return;
+    }
+
+    // Liberar memória do cliente atual
+    free(cliente_atual);
+    cliente_atual = NULL;
+
+    printf("Entrega na volta realizada com sucesso.\n");
+}
+
+void adicionar_lista_devolucao()
+{
+    if (cliente_atual == NULL) {
+        return;
+    }
+
+    // Adicionar cliente à lista de devolução
+    ListaDevolucao *novo_item = (ListaDevolucao *)malloc(sizeof(ListaDevolucao));
+    if (novo_item == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para ListaDevolucao.\n");
+        return;
+    }
+    novo_item->cliente = cliente_atual;
+    novo_item->prox = NULL;
+
+    if (fila->fila_devolucao->fim == NULL) {
+        fila->fila_devolucao->ini = novo_item;
+        fila->fila_devolucao->fim = novo_item;
+    } else {
+        fila->fila_devolucao->fim->prox = novo_item;
+        fila->fila_devolucao->fim = novo_item;
+    }
+
+    cliente_atual = NULL;
+    printf("Cliente adicionado à lista de devolução.\n");
 }

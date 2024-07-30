@@ -61,6 +61,10 @@ typedef struct Devolucao {
     ListaDevolucao* fim;
 } Devolucao;
 
+typedef struct TransportadoraFila {
+    Rota *rota_on;
+    Devolucao *fila_devolucao;
+} TransportadoraFila;
 
 
 extern Cliente* lista_clientes; 
