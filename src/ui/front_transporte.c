@@ -220,6 +220,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
 
     cssProvider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(cssProvider, "/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/style.css", NULL);
+    // gtk_css_provider_load_from_path(/home/ritar0drigues/Transportadora/Transportadora-1/src/ui/style.css", NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
                                               GTK_STYLE_PROVIDER(cssProvider),
                                               GTK_STYLE_PROVIDER_PRIORITY_USER);
@@ -259,6 +260,8 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     gtk_grid_attach(GTK_GRID(grid), button_sair, 5, 0, 1, 1);
 
     logo_image = gtk_image_new_from_file("/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/logo_transp.png");
+    // logo_image = gtk_image_new_from_file("/home/ritar0drigues/Transportadora/Transportadora-1/src/ui/logo_transp.png");
+
     gtk_image_set_pixel_size(GTK_IMAGE(logo_image), 250);
 
     logo_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
