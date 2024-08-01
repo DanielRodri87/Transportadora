@@ -10,6 +10,7 @@
 #define CLIENT_WINDOW_HEIGHT 800
 
 
+
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
 {
@@ -135,8 +136,7 @@ void show_cadastro_cliente(GtkButton *button, gpointer user_data)
     gtk_widget_show_all(client_vbox);
 }
 
-void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data)
-{
+void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data) {
     GtkWidget *client_window;
     GtkWidget *client_vbox;
     GtkWidget *client_grid;
@@ -170,6 +170,7 @@ void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data)
     button_buscar = gtk_button_new_with_label("Buscar Cliente");
     gtk_widget_set_hexpand(button_buscar, TRUE);
     gtk_grid_attach(GTK_GRID(client_grid), button_buscar, 2, 0, 1, 1);
+    g_signal_connect(button_buscar, "clicked", G_CALLBACK(on_buscar_button_clicked), NULL);
 
     empty_space = gtk_label_new("");
     gtk_box_pack_start(GTK_BOX(client_vbox), empty_space, TRUE, TRUE, 0);
@@ -192,7 +193,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     GtkCssProvider *cssProvider;
 
     cssProvider = gtk_css_provider_new();
-    gtk_css_provider_load_from_path(cssProvider, "/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/style.css", NULL);
+    gtk_css_provider_load_from_path(cssProvider, "/home/ritar0drigues/Transportadora/src/ui/style.css", NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
                                               GTK_STYLE_PROVIDER(cssProvider),
                                               GTK_STYLE_PROVIDER_PRIORITY_USER);
@@ -230,7 +231,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     gtk_widget_set_hexpand(button_sair, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_sair, 4, 0, 1, 1);
 
-    logo_image = gtk_image_new_from_file("/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/logo_transp.png");
+    logo_image = gtk_image_new_from_file("/home/ritar0drigues/Transportadora/src/ui/logo_transp.png");
     gtk_image_set_pixel_size(GTK_IMAGE(logo_image), 250);
 
     logo_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -329,4 +330,72 @@ void display_client_list(GtkWidget *parent)
     }
 
     gtk_widget_show_all(parent);
+}
+
+// ###################################################### BUSCAR CLIENTES ######################################################
+
+
+void show_buscar_cliente(GtkButton *button, gpointer user_data) {
+    GtkWidget *dialog;
+    GtkWidget *content_area;
+    GtkWidget *entry;
+    GtkWidget *buscar_button;
+    GtkWidget *cancel_button;
+
+    // Criar o diálogo de busca de clientes
+    dialog = gtk_dialog_new_with_buttons("Buscar Cliente",
+                                         GTK_WINDOW(user_data),
+                                         GTK_DIALOG_MODAL,
+                                         NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+    // Criar uma entrada de texto para inserir o CPF do cliente
+    entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "Digite o CPF do Cliente");
+    gtk_box_pack_start(GTK_BOX(content_area), entry, TRUE, TRUE, 0);
+
+    // Criar o botão de buscar e conectar a função de callback
+    buscar_button = gtk_button_new_with_label("Buscar");
+    g_signal_connect(buscar_button, "clicked", G_CALLBACK(on_buscar_button_clicked), NULL);
+    gtk_box_pack_start(GTK_BOX(content_area), buscar_button, TRUE, TRUE, 0);
+
+    // Criar o botão de cancelar
+    cancel_button = gtk_button_new_with_label("Cancelar");
+    g_signal_connect(cancel_button, "clicked", G_CALLBACK(gtk_widget_destroy), dialog);
+    gtk_box_pack_start(GTK_BOX(content_area), cancel_button, TRUE, TRUE, 0);
+
+    gtk_widget_show_all(dialog);
+}
+
+void on_buscar_button_clicked(GtkButton *button, gpointer user_data) {
+    GtkWidget *dialog;
+    GtkEntry *entry = GTK_ENTRY(user_data);
+    const gchar *cpf = gtk_entry_get_text(entry);
+
+    // Obter a transportadora (ou outra estrutura que contenha a lista de clientes)
+    Transportadora *transportadora = /* Código para obter a instância de Transportadora */;
+    
+    // Buscar o cliente
+    Cliente *cliente_encontrado = buscar_cliente(transportadora, cpf);
+
+    // Exibir o resultado da busca
+    if (cliente_encontrado) {
+        dialog = gtk_message_dialog_new(NULL,
+                                        GTK_DIALOG_MODAL,
+                                        GTK_MESSAGE_INFO,
+                                        GTK_BUTTONS_OK,
+                                        "Cliente com CPF '%s' encontrado!",
+                                        cpf);
+    } else {
+        dialog = gtk_message_dialog_new(NULL,
+                                        GTK_DIALOG_MODAL,
+                                        GTK_MESSAGE_ERROR,
+                                        GTK_BUTTONS_OK,
+                                        "Cliente com CPF '%s' não encontrado.",
+                                        cpf);
+    }
+
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }

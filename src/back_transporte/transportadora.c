@@ -6,7 +6,7 @@
 Cliente* lista_clientes = NULL;
 
 // Função para cadastrar um novo cliente
-void cadastrarCliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email)
+void cadastrarCliente( Transportadora* transportadora, const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email)
 {
     printf("Entrou na função.\n");
 
@@ -44,12 +44,12 @@ void cadastrarCliente(const char *nome, const char *cpf, const char *estado, con
     novo_cliente->prox = NULL;
 
     // Inserir o novo cliente na lista de clientes
-    if (lista_clientes == NULL) {
+    if (transportadora->lista_clientes == NULL) {
         // Se a lista está vazia, o novo cliente é o primeiro cliente
-        lista_clientes = novo_cliente;
+        transportadora->lista_clientes = novo_cliente;
     } else {
         // Caso contrário, percorrer a lista até o último cliente e adicionar o novo cliente lá
-        Cliente* atual = lista_clientes;
+        Cliente* atual = transportadora->lista_clientes;
         while (atual->prox != NULL) {
             atual = atual->prox;
         }
@@ -57,6 +57,25 @@ void cadastrarCliente(const char *nome, const char *cpf, const char *estado, con
     }
 
     printf("Saiu da função.\n");
+}
+
+// Função para buscar cliente
+Cliente* buscar_cliente(Transportadora* transportadora, const char* cpf){
+    if(transportadora == NULL || cpf == NULL){
+        printf("Transportadora ou CPF inválido");
+        return NULL;
+    }
+
+    Cliente *atual = transportadora->lista_clientes
+    while(atual != NULL){
+        if (strcmp(atual->cpf, cpf) == 0){
+            print("Cliente Encontrado");
+            return atual;
+        }
+        atual = atual->prox
+    }
+    printf("Cliente não encontrado");
+    return NULL;
 }
 
 // Função para imprimir a lista de clientes
