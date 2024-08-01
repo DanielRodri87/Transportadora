@@ -220,6 +220,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
 
     cssProvider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(cssProvider, "/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/style.css", NULL);
+    // gtk_css_provider_load_from_path(/home/ritar0drigues/Transportadora/Transportadora-1/src/ui/style.css", NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
                                               GTK_STYLE_PROVIDER(cssProvider),
                                               GTK_STYLE_PROVIDER_PRIORITY_USER);
@@ -259,6 +260,8 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     gtk_grid_attach(GTK_GRID(grid), button_sair, 5, 0, 1, 1);
 
     logo_image = gtk_image_new_from_file("/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/logo_transp.png");
+    // logo_image = gtk_image_new_from_file("/home/ritar0drigues/Transportadora/Transportadora-1/src/ui/logo_transp.png");
+
     gtk_image_set_pixel_size(GTK_IMAGE(logo_image), 250);
 
     logo_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -485,6 +488,7 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     GtkWidget *button_concluir_rota;
     GtkWidget *button_entrega_ida;
     GtkWidget *button_entrega_volta;
+    GtkWidget *button_exibir_produtos;
     GtkWidget *empty_space;
 
     transport_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -519,10 +523,10 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     gtk_grid_attach(GTK_GRID(transport_grid), button_mostrar_fila, 0, 1, 1, 1);
     g_signal_connect(button_mostrar_fila, "clicked", G_CALLBACK(on_mostrar_fila_clicked), NULL);
 
-    button_concluir_fila = gtk_button_new_with_label("Concluir Fila");
-    gtk_widget_set_hexpand(button_concluir_fila, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_concluir_fila, 1, 1, 1, 1);
-    g_signal_connect(button_concluir_fila, "clicked", G_CALLBACK(on_concluir_fila_clicked), NULL);
+    button_exibir_produtos = gtk_button_new_with_label("Exibir Produtos");
+    gtk_widget_set_hexpand(button_exibir_produtos, TRUE);
+    gtk_grid_attach(GTK_GRID(transport_grid), button_exibir_produtos, 1, 1, 1, 1);
+    g_signal_connect(button_exibir_produtos, "clicked", G_CALLBACK(on_exibir_produtos_clicked), NULL);
 
     button_concluir_rota = gtk_button_new_with_label("Concluir Rota");
     gtk_widget_set_hexpand(button_concluir_rota, TRUE);
@@ -854,14 +858,31 @@ void on_anterior_cliente_clicked(GtkButton *button, gpointer user_data)
     }
 }
 
-void on_concluir_fila_clicked()
-{
-    printf("Concluir fila\n");
-}
 
 void on_concluir_rota_clicked()
 {
-    printf("Concluir rota\n");
+    if (transportadora == NULL || transportadora->rota_on == NULL)
+    {
+        printf("Erro: Transportadora ou rota não inicializada.\n");
+        return;
+    }
+
+    concluir_rota(transportadora);
+}
+
+void on_sim_button_clicked_ida(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    concluir_entrega_ida();
+}
+
+// Função chamada quando o botão Não é clicado
+void on_nao_button_clicked_ida(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    tentar_novamente_entrega_ida();
 }
 
 void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
@@ -878,8 +899,6 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
     dialog = gtk_dialog_new_with_buttons("Entrega na Ida",
                                          NULL,
                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         "_Sim", GTK_RESPONSE_ACCEPT,
-                                         "_Não", GTK_RESPONSE_REJECT,
                                          NULL);
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
@@ -894,6 +913,11 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
 
     // Adicionar cor de fundo
     set_background_color(vbox, "#F0DBC0");
+
+    // Criar e adicionar um título ao diálogo
+    GtkWidget *titulo_label = gtk_label_new("Informações do Cliente");
+    gtk_widget_set_name(titulo_label, "titulo-label");
+    gtk_box_pack_start(GTK_BOX(vbox), titulo_label, FALSE, FALSE, 10);
 
     // Labels para exibir as informações do cliente
     nome_label = gtk_label_new("");
@@ -915,21 +939,33 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
     gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
 
+    // Pergunta de confirmação
+    GtkWidget *pergunta_label = gtk_label_new("A entrega foi realizada com sucesso?");
+    gtk_widget_set_name(pergunta_label, "pergunta-label");
+    gtk_box_pack_start(GTK_BOX(vbox), pergunta_label, FALSE, FALSE, 20);
+
+    // Caixa horizontal para os botões
+    GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
+    gtk_box_pack_start(GTK_BOX(vbox), button_box, FALSE, FALSE, 10);
+
+    // Botões Sim e Não
+    GtkWidget *sim_button = gtk_button_new_with_label("Sim");
+    gtk_widget_set_name(sim_button, "sim-button");
+    g_signal_connect(sim_button, "clicked", G_CALLBACK(on_sim_button_clicked_ida), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), sim_button, TRUE, TRUE, 10);
+
+    GtkWidget *nao_button = gtk_button_new_with_label("Não");
+    gtk_widget_set_name(nao_button, "nao-button");
+    g_signal_connect(nao_button, "clicked", G_CALLBACK(on_nao_button_clicked_ida), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), nao_button, TRUE, TRUE, 10);
+
     gtk_widget_show_all(dialog);
 
     // Exibir o cliente atual
     exibir_cliente_atual();
-
-    // Conectar a resposta do diálogo
-    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-    if (response == GTK_RESPONSE_ACCEPT) {
-        concluir_entrega_ida();
-    } else if (response == GTK_RESPONSE_REJECT) {
-        tentar_novamente_entrega_ida();
-    }
-
-    gtk_widget_destroy(dialog);
 }
+
 
 void concluir_entrega_ida()
 {
@@ -965,6 +1001,21 @@ void tentar_novamente_entrega_ida()
     printf("Entrega não realizada. Tentativa adicionada para segunda tentativa.\n");
 }
 
+void on_sim_button_clicked_volta(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    concluir_entrega_volta();
+}
+
+// Função chamada quando o botão Não é clicado na volta
+void on_nao_button_clicked_volta(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+    adicionar_lista_devolucao();
+}
+
 void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
 {
     if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa2 == NULL)
@@ -983,8 +1034,6 @@ void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
     dialog = gtk_dialog_new_with_buttons("Entrega na Volta",
                                          NULL,
                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         "_Sim", GTK_RESPONSE_ACCEPT,
-                                         "_Não", GTK_RESPONSE_REJECT,
                                          NULL);
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
@@ -999,6 +1048,11 @@ void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
 
     // Adicionar cor de fundo
     set_background_color(vbox, "#F0DBC0");
+
+    // Criar e adicionar um título ao diálogo
+    GtkWidget *titulo_label = gtk_label_new("Informações do Cliente");
+    gtk_widget_set_name(titulo_label, "titulo-label");
+    gtk_box_pack_start(GTK_BOX(vbox), titulo_label, FALSE, FALSE, 10);
 
     // Labels para exibir as informações do cliente
     nome_label = gtk_label_new("");
@@ -1020,21 +1074,35 @@ void on_entrega_volta_clicked(GtkButton *button, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
     gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
 
+    // Pergunta de confirmação
+    GtkWidget *pergunta_label = gtk_label_new("A entrega foi realizada com sucesso?");
+    gtk_widget_set_name(pergunta_label, "pergunta-label");
+    gtk_box_pack_start(GTK_BOX(vbox), pergunta_label, FALSE, FALSE, 20);
+
+    // Caixa horizontal para os botões
+    GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
+    gtk_box_pack_start(GTK_BOX(vbox), button_box, FALSE, FALSE, 10);
+
+    // Botões Sim e Não
+    GtkWidget *sim_button = gtk_button_new_with_label("Sim");
+    gtk_widget_set_name(sim_button, "sim-button");
+    g_signal_connect(sim_button, "clicked", G_CALLBACK(on_sim_button_clicked_volta), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), sim_button, TRUE, TRUE, 10);
+
+    GtkWidget *nao_button = gtk_button_new_with_label("Não");
+    gtk_widget_set_name(nao_button, "nao-button");
+    g_signal_connect(nao_button, "clicked", G_CALLBACK(on_nao_button_clicked_volta), dialog);
+    gtk_box_pack_start(GTK_BOX(button_box), nao_button, TRUE, TRUE, 10);
+
     gtk_widget_show_all(dialog);
 
     // Exibir o cliente atual
     exibir_cliente_atual();
-
-    // Conectar a resposta do diálogo
-    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-    if (response == GTK_RESPONSE_ACCEPT) {
-        concluir_entrega_volta();
-    } else if (response == GTK_RESPONSE_REJECT) {
-        adicionar_lista_devolucao();
-    }
-
-    gtk_widget_destroy(dialog);
 }
+
+
+
 
 void concluir_entrega_volta()
 {
@@ -1074,4 +1142,143 @@ void adicionar_lista_devolucao()
 
     cliente_atual = NULL;
     printf("Cliente adicionado à lista de devolução.\n");
+}
+
+// void exibir_cliente_atual()
+// {
+//     if (cliente_atual == NULL)
+//         return;
+
+//     // Atualiza os labels com as informações do cliente
+//     gtk_label_set_text(GTK_LABEL(nome_label), cliente_atual->nome);
+//     gtk_label_set_text(GTK_LABEL(cpf_label), cliente_atual->cpf);
+//     gtk_label_set_text(GTK_LABEL(estado_label), cliente_atual->estado);
+//     gtk_label_set_text(GTK_LABEL(cidade_label), cliente_atual->cidade);
+//     gtk_label_set_text(GTK_LABEL(rua_label), cliente_atual->rua);
+//     char numero_str[10];
+//     sprintf(numero_str, "%d", cliente_atual->numero);
+//     gtk_label_set_text(GTK_LABEL(numero_label), numero_str);
+//     gtk_label_set_text(GTK_LABEL(telefone_label), cliente_atual->telefone);
+//     gtk_label_set_text(GTK_LABEL(email_label), cliente_atual->email);
+// }
+
+void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
+{
+    GtkWidget *cpf_dialog, *cpf_entry;
+    GtkWidget *content_area;
+    GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+    // Cria uma janela de diálogo para solicitar o CPF
+    cpf_dialog = gtk_dialog_new_with_buttons("Digite o CPF do Cliente",
+                                             NULL,
+                                             flags,
+                                             ("OK"),
+                                             GTK_RESPONSE_OK,
+                                             ("Cancelar"),
+                                             GTK_RESPONSE_CANCEL,
+                                             NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(cpf_dialog));
+    cpf_entry = gtk_entry_new();
+    gtk_entry_set_max_length(GTK_ENTRY(cpf_entry), 14);
+    gtk_container_add(GTK_CONTAINER(content_area), cpf_entry);
+
+    gtk_widget_show_all(cpf_dialog);
+
+    // Lida com a resposta do usuário
+    gint response = gtk_dialog_run(GTK_DIALOG(cpf_dialog));
+    if (response == GTK_RESPONSE_OK)
+    {
+        const gchar *cpf = gtk_entry_get_text(GTK_ENTRY(cpf_entry));
+        Cliente *cliente = lista_clientes;
+
+        // Busca o cliente pelo CPF
+        while (cliente != NULL)
+        {
+            if (strcmp(cliente->cpf, cpf) == 0)
+            {
+                cliente_atual = cliente;
+                break;
+            }
+            cliente = cliente->prox;
+        }
+
+        if (cliente_atual != NULL)
+        {
+            // Criar uma janela de diálogo para exibir os produtos do cliente
+            dialog = gtk_dialog_new_with_buttons("Produtos do Cliente",
+                                                 NULL,
+                                                 GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                 NULL);
+
+            gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
+
+            GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+            // Caixa vertical para organizar os labels
+            GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+            gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
+            gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+            gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+            // Adicionar cor de fundo
+            set_background_color(vbox, "#F0DBC0");
+
+            // Labels para exibir as informações do cliente
+            nome_label = gtk_label_new("");
+            cpf_label = gtk_label_new("");
+            estado_label = gtk_label_new("");
+            cidade_label = gtk_label_new("");
+            rua_label = gtk_label_new("");
+            numero_label = gtk_label_new("");
+            telefone_label = gtk_label_new("");
+            email_label = gtk_label_new("");
+
+            // Adicionar labels na vbox
+            gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
+            gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+
+            // Exibir as informações do cliente
+            exibir_cliente_atual();
+
+            // Caixa vertical para os produtos
+            GtkWidget *prod_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+            gtk_container_set_border_width(GTK_CONTAINER(prod_vbox), 10);
+            gtk_box_set_homogeneous(GTK_BOX(prod_vbox), FALSE);
+            gtk_container_add(GTK_CONTAINER(content_area), prod_vbox);
+
+            // Adicionar cor de fundo
+            set_background_color(prod_vbox, "#F0DBC0");
+
+            // Iterar sobre os produtos do cliente e adicioná-los à vbox
+            Produto *produto_atual = cliente_atual->produtos;
+            while (produto_atual != NULL)
+            {
+                GtkWidget *produto_label = gtk_label_new(produto_atual->nome);
+                gtk_box_pack_start(GTK_BOX(prod_vbox), produto_label, FALSE, FALSE, 5);
+                produto_atual = produto_atual->prox;
+            }
+
+            gtk_widget_show_all(dialog);
+        }
+        else
+        {
+            // Exibir mensagem de erro caso o cliente não seja encontrado
+            GtkWidget *error_dialog = gtk_message_dialog_new(GTK_WINDOW(cpf_dialog),
+                                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                             GTK_MESSAGE_ERROR,
+                                                             GTK_BUTTONS_CLOSE,
+                                                             "Cliente não encontrado.");
+            gtk_dialog_run(GTK_DIALOG(error_dialog));
+            gtk_widget_destroy(error_dialog);
+        }
+    }
+
+    gtk_widget_destroy(cpf_dialog);
 }

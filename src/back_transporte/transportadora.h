@@ -81,4 +81,6 @@ void cadastrar_cliente_rota(Transportadora *t, Cliente *buscado);
 void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome);
 void mostrar_fila_entregas(Transportadora *t);
 
+void exibir_produtos_cliente(Cliente *c);
+
 #endif
