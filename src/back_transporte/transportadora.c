@@ -43,6 +43,8 @@ void cadastrar_cliente(const char *nome, const char *cpf, const char *estado, co
     // Configurar o ponteiro 'prox' do novo cliente
     novo_cliente->prox = NULL;
 
+    novo_cliente->produtos = NULL;
+
     // Inserir o novo cliente na lista de clientes
     if (lista_clientes == NULL)
     {
@@ -191,31 +193,34 @@ void cadastrar_cliente_rota(Transportadora *t, Cliente *buscado)
 }
 
 
-void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome) {
+void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome)
+{
     Produto *p = (Produto *)malloc(sizeof(Produto));
-    Produto *aux;
+    if (p == NULL) {
+        printf("Erro ao alocar memória para o produto.\n");
+        return;
+    }
 
     p->id = id;
     strcpy(p->nome, nome);
-
     p->prox = NULL;
 
-    if (buscado != NULL)
-    {
-        buscado->produtos = p;
-        printf("Produto adicionado ao cliente.\n");
-    }
-    else
-    {
-        aux = buscado->produtos;
-        while (aux->prox != NULL)
-        {
-            aux = aux->prox;
+    if (buscado != NULL) {
+        if (buscado->produtos == NULL) {
+            // Caso o cliente não tenha produtos, adiciona o primeiro produto
+            buscado->produtos = p;
+        } else {
+            // Adiciona o novo produto ao final da lista de produtos do cliente
+            Produto *aux = buscado->produtos;
+            while (aux->prox != NULL) {
+                aux = aux->prox;
+            }
+            aux->prox = p;
         }
-        aux->prox = p;
         printf("Produto adicionado ao cliente.\n");
     }
 }
+
 
 void exibir_produtos_cliente(Cliente *c)
 {
@@ -227,8 +232,27 @@ void exibir_produtos_cliente(Cliente *c)
 }
 
 
-void mostrar_fila_entregas(Transportadora *t)
+void remover_produto(const int id)
 {
-    // Implementação básica
-    printf("Fila de entregas exibida.\n");
+    Produto *p = lista_produtos;
+    Produto *anterior = NULL;
+
+    while (p != NULL && p->id != id) {
+        anterior = p;
+        p = p->prox;
+    }
+
+    if (p == NULL) {
+        printf("Produto não encontrado.\n");
+        return;
+    }
+
+    if (anterior == NULL) {
+        lista_produtos = p->prox;
+    } else {
+        anterior->prox = p->prox;
+    }
+
+    free(p);
+    printf("Produto removido.\n");
 }
