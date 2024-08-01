@@ -1335,32 +1335,30 @@ void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_destroy(cpf_dialog);
 }
 
-void on_delete_produto_button_clicked(GtkButton *button, gpointer user_data)
-{
+void on_delete_produto_button_clicked(GtkButton *button, gpointer user_data) {
     Produto *produto = (Produto *)user_data;
 
-    // Aqui você deve adicionar a lógica para remover o produto da lista do cliente
-    // Atualize a lista de produtos do cliente e libere a memória do produto
-
-    // Exemplo de remoção de produto da lista (ajuste conforme sua estrutura de dados):
+    // Iterar sobre a lista de clientes
     Cliente *cliente = lista_clientes;
-    while (cliente != NULL)
-    {
+    while (cliente != NULL) {
         Produto *anterior = NULL;
         Produto *atual = cliente->produtos;
-        while (atual != NULL)
-        {
-            if (atual == produto)
-            {
-                if (anterior == NULL)
-                {
+
+        // Iterar sobre a lista de produtos do cliente
+        while (atual != NULL) {
+            if (atual == produto) {
+                // Remover o produto da lista
+                if (anterior == NULL) {
+                    // Produto é o primeiro da lista
                     cliente->produtos = atual->prox;
-                }
-                else
-                {
+                } else {
+                    // Produto está no meio ou no final da lista
                     anterior->prox = atual->prox;
                 }
+                // Liberar a memória do produto removido
                 free(atual);
+
+                // Destruir o widget do botão
                 gtk_widget_destroy(GTK_WIDGET(gtk_widget_get_parent(GTK_WIDGET(button))));
                 printf("Produto removido.\n");
                 return;

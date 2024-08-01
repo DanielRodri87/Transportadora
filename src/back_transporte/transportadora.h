@@ -72,15 +72,13 @@ extern Cliente* lista_clientes;
 void cadastrar_cliente(const char *nome, const char *cpf, const char *estado, const char *cidade, const char *rua, int numero, const char *telefone, const char *email);
 void exibir_clientes();
 Cliente *buscarClientePorCPF(const char *cpf);
-
 void inicializar_transportadora(Transportadora *t);
 Rota *gerar_rota();
 void ativar_rota(Transportadora *t);
 Transportadora* concluir_rota(Transportadora *t);
 void cadastrar_cliente_rota(Transportadora *t, Cliente *buscado);
 void cadastrar_produto_cliente(Transportadora *t, Cliente *c, const int id, const char *nome);
-void mostrar_fila_entregas(Transportadora *t);
-
+void remover_produto(const int id);
 void exibir_produtos_cliente(Cliente *c);
 
 #endif

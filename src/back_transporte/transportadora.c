@@ -232,8 +232,27 @@ void exibir_produtos_cliente(Cliente *c)
 }
 
 
-void mostrar_fila_entregas(Transportadora *t)
+void remover_produto(const int id)
 {
-    // Implementação básica
-    printf("Fila de entregas exibida.\n");
+    Produto *p = lista_produtos;
+    Produto *anterior = NULL;
+
+    while (p != NULL && p->id != id) {
+        anterior = p;
+        p = p->prox;
+    }
+
+    if (p == NULL) {
+        printf("Produto não encontrado.\n");
+        return;
+    }
+
+    if (anterior == NULL) {
+        lista_produtos = p->prox;
+    } else {
+        anterior->prox = p->prox;
+    }
+
+    free(p);
+    printf("Produto removido.\n");
 }
