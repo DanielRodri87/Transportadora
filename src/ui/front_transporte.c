@@ -9,10 +9,14 @@
 #define CLIENT_WINDOW_WIDTH 800
 #define CLIENT_WINDOW_HEIGHT 800
 
+int score;
+
 Transportadora *transportadora = NULL;
 TransportadoraFila *fila = NULL; 
 
-
+Cliente *cliente_atual = NULL;
+GtkWidget *dialog = NULL;
+GtkWidget *nome_label, *cpf_label, *estado_label, *cidade_label, *rua_label, *numero_label, *telefone_label, *email_label;
 
 
 // ###################################### CADASTRAR CLIENTES ######################################
@@ -256,6 +260,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     button_pontuacao = gtk_button_new_with_label("Pontuação");
     gtk_widget_set_hexpand(button_pontuacao, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_pontuacao, 3, 0, 1, 1);
+    g_signal_connect(button_pontuacao, "clicked", G_CALLBACK(on_pontuacao_clicked), NULL);
 
     button_sair = gtk_button_new_with_label("Sair");
     gtk_widget_set_hexpand(button_sair, TRUE);
@@ -273,6 +278,38 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     g_signal_connect(button_sair, "clicked", G_CALLBACK(gtk_main_quit), NULL);
 
     gtk_widget_show_all(window);
+}
+
+
+// ###################################### PONTUAÇÃO ######################################
+// apenas faça uma janela de 200x200: Pontuação: transpotadora->score
+void on_pontuacao_clicked(GtkButton *button, gpointer user_data)
+{
+    (void)button;
+    (void)user_data;
+
+    GtkWidget *pontuacao_window;
+    GtkWidget *pontuacao_label;
+    gchar *pontuacao_text;
+
+    pontuacao_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(pontuacao_window), "Pontuação");
+    gtk_window_set_default_size(GTK_WINDOW(pontuacao_window), 200, 200);
+
+    if (transportadora == NULL)
+    {
+        pontuacao_text = "Pontuação: 0";
+    }
+    else
+    {
+        pontuacao_text = g_strdup_printf("Pontuação: %d", transportadora->score);
+    }
+
+    pontuacao_label = gtk_label_new(pontuacao_text);
+    gtk_container_add(GTK_CONTAINER(pontuacao_window), pontuacao_label);
+
+    gtk_widget_show_all(pontuacao_window);
+
 }
 
 // ###################################################### EXIBIR CLIENTES ######################################################
@@ -755,10 +792,6 @@ void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_destroy(dialog);
 }
 
-Cliente *cliente_atual = NULL;
-GtkWidget *dialog = NULL;
-GtkWidget *nome_label, *cpf_label, *estado_label, *cidade_label, *rua_label, *numero_label, *telefone_label, *email_label;
-
 void set_background_color(GtkWidget *widget, const char *color)
 {
     GdkRGBA bg_color;
@@ -914,7 +947,10 @@ void on_sim_button_clicked_ida(GtkButton *button, gpointer user_data)
 {
     GtkWidget *dialog = GTK_WIDGET(user_data);
     gtk_widget_destroy(dialog);
+    score += 5;
+    transportadora->score = score;
     concluir_entrega_ida();
+
 }
 
 // Função chamada quando o botão Não é clicado
@@ -1045,6 +1081,8 @@ void on_sim_button_clicked_volta(GtkButton *button, gpointer user_data)
 {
     GtkWidget *dialog = GTK_WIDGET(user_data);
     gtk_widget_destroy(dialog);
+    score += 3;
+    transportadora->score = score;
     concluir_entrega_volta();
 }
 
@@ -1053,6 +1091,8 @@ void on_nao_button_clicked_volta(GtkButton *button, gpointer user_data)
 {
     GtkWidget *dialog = GTK_WIDGET(user_data);
     gtk_widget_destroy(dialog);
+    score -= 1;
+    transportadora->score = score;
     adicionar_lista_devolucao();
 }
 
