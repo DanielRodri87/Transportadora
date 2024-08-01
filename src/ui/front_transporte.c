@@ -195,6 +195,8 @@ void on_gerenciar_clientes_clicked(GtkButton *button, gpointer user_data)
     button_buscar = gtk_button_new_with_label("Buscar Cliente");
     gtk_widget_set_hexpand(button_buscar, TRUE);
     gtk_grid_attach(GTK_GRID(client_grid), button_buscar, 2, 0, 1, 1);
+    g_signal_connect(button_buscar, "clicked", G_CALLBACK(on_pesquisar_cliente), client_vbox);
+
 
     empty_space = gtk_label_new("");
     gtk_box_pack_start(GTK_BOX(client_vbox), empty_space, TRUE, TRUE, 0);
@@ -641,6 +643,50 @@ void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
             // Cadastrar o cliente na rota
             printf("Cliente encontrado: %s\n", buscado->nome);
             cadastrar_cliente_rota(transportadora, buscado);
+        }
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
+void on_pesquisar_cliente()
+{
+    GtkWidget *dialog;
+    GtkWidget *content_area;
+    GtkWidget *entry;
+    GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+    dialog = gtk_dialog_new_with_buttons("Buscar Cliente",
+                                         NULL,
+                                         flags,
+                                         ("_OK"),
+                                         GTK_RESPONSE_ACCEPT,
+                                         ("_Cancel"),
+                                         GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    entry = gtk_entry_new();
+    gtk_entry_set_max_length(GTK_ENTRY(entry), 11);
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "Digite o CPF do Cliente");
+    gtk_container_add(GTK_CONTAINER(content_area), entry);
+
+    gtk_widget_show_all(dialog);
+
+    // Conectar a resposta do diálogo
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        const gchar *cpf = gtk_entry_get_text(GTK_ENTRY(entry));
+
+        // Buscar o cliente
+        Cliente *buscado = buscarClientePorCPF(cpf);
+
+        if (buscado == NULL) {
+            printf("Cliente com CPF %s não encontrado.\n", cpf);
+        } else {
+            // Exibir as informações do cliente
+            printf("Cliente encontrado: %s\n", buscado->nome);
+            on_more_button_clicked(NULL, buscado);
         }
     }
 
