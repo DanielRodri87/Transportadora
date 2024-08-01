@@ -43,6 +43,8 @@ void cadastrar_cliente(const char *nome, const char *cpf, const char *estado, co
     // Configurar o ponteiro 'prox' do novo cliente
     novo_cliente->prox = NULL;
 
+    novo_cliente->produtos = NULL;
+
     // Inserir o novo cliente na lista de clientes
     if (lista_clientes == NULL)
     {
@@ -191,31 +193,34 @@ void cadastrar_cliente_rota(Transportadora *t, Cliente *buscado)
 }
 
 
-void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome) {
+void cadastrar_produto_cliente(Transportadora *t, Cliente *buscado, const int id, const char *nome)
+{
     Produto *p = (Produto *)malloc(sizeof(Produto));
-    Produto *aux;
+    if (p == NULL) {
+        printf("Erro ao alocar memória para o produto.\n");
+        return;
+    }
 
     p->id = id;
     strcpy(p->nome, nome);
-
     p->prox = NULL;
 
-    if (buscado != NULL)
-    {
-        buscado->produtos = p;
-        printf("Produto adicionado ao cliente.\n");
-    }
-    else
-    {
-        aux = buscado->produtos;
-        while (aux->prox != NULL)
-        {
-            aux = aux->prox;
+    if (buscado != NULL) {
+        if (buscado->produtos == NULL) {
+            // Caso o cliente não tenha produtos, adiciona o primeiro produto
+            buscado->produtos = p;
+        } else {
+            // Adiciona o novo produto ao final da lista de produtos do cliente
+            Produto *aux = buscado->produtos;
+            while (aux->prox != NULL) {
+                aux = aux->prox;
+            }
+            aux->prox = p;
         }
-        aux->prox = p;
         printf("Produto adicionado ao cliente.\n");
     }
 }
+
 
 void exibir_produtos_cliente(Cliente *c)
 {

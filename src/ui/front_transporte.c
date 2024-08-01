@@ -698,12 +698,6 @@ void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
     (void)button;
     (void)user_data;
 
-    if (transportadora == NULL)
-    {
-        printf("Erro: Transportadora inválida.\n");
-        return;
-    }
-
     // Criar uma janela de diálogo para pedir o CPF, ID do produto e nome do produto
     GtkWidget *dialog;
     GtkWidget *content_area;
@@ -1210,6 +1204,9 @@ void adicionar_lista_devolucao()
 
 void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
 {
+    (void)button;
+    (void)user_data;
+
     GtkWidget *cpf_dialog, *cpf_entry;
     GtkWidget *content_area;
     GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
@@ -1243,16 +1240,15 @@ void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
         {
             if (strcmp(cliente->cpf, cpf) == 0)
             {
-                cliente_atual = cliente;
                 break;
             }
             cliente = cliente->prox;
         }
 
-        if (cliente_atual != NULL)
+        if (cliente != NULL)
         {
             // Criar uma janela de diálogo para exibir os produtos do cliente
-            dialog = gtk_dialog_new_with_buttons("Produtos do Cliente",
+            GtkWidget *dialog = gtk_dialog_new_with_buttons("Produtos do Cliente",
                                                  NULL,
                                                  GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  NULL);
@@ -1261,57 +1257,67 @@ void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
 
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-            // Caixa vertical para organizar os labels
-            GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-            gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
-            gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
-            gtk_container_add(GTK_CONTAINER(content_area), vbox);
+            // Caixa vertical para organizar os produtos
+            GtkWidget *list_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+            gtk_box_pack_start(GTK_BOX(content_area), list_vbox, TRUE, TRUE, 0);
 
-            // Adicionar cor de fundo
-            set_background_color(vbox, "#F0DBC0");
+            const gchar *css = "* { background-color: #F0DBC0; color: #333; padding: 10px; border: 1px solid #ccc; }";
+            apply_css(list_vbox, css);
 
-            // Labels para exibir as informações do cliente
-            nome_label = gtk_label_new("");
-            cpf_label = gtk_label_new("");
-            estado_label = gtk_label_new("");
-            cidade_label = gtk_label_new("");
-            rua_label = gtk_label_new("");
-            numero_label = gtk_label_new("");
-            telefone_label = gtk_label_new("");
-            email_label = gtk_label_new("");
+            Produto *produto_atual = cliente->produtos;
+            if (produto_atual == NULL) {
+                // Exibir mensagem de erro caso o cliente não tenha produtos
+                GtkWidget *error_dialog = gtk_message_dialog_new(GTK_WINDOW(cpf_dialog),
+                                                                 GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                                 GTK_MESSAGE_ERROR,
+                                                                 GTK_BUTTONS_CLOSE,
+                                                                 "O cliente não possui produtos cadastrados.");
+                gtk_dialog_run(GTK_DIALOG(error_dialog));
+                gtk_widget_destroy(error_dialog);
+            } else {
+                while (produto_atual != NULL)
+                {
+                    GtkWidget *prod_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+                    gtk_box_pack_start(GTK_BOX(list_vbox), prod_box, FALSE, FALSE, 0);
 
-            // Adicionar labels na vbox
-            gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
-            gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
-            gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
-            gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
-            gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
-            gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
-            gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
-            gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+                    const gchar *prod_box_css = "box { border-bottom: 1px solid #aaa; }";
+                    apply_css(prod_box, prod_box_css);
 
-            // Exibir as informações do cliente
-            exibir_cliente_atual();
+                    char id_str[10];
+                    sprintf(id_str, "%d", produto_atual->id);
+                    GtkWidget *label_id = gtk_label_new(id_str);
+                    gtk_widget_set_hexpand(label_id, TRUE);
+                    gtk_box_pack_start(GTK_BOX(prod_box), label_id, FALSE, FALSE, 5);
 
-            // Caixa vertical para os produtos
-            GtkWidget *prod_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-            gtk_container_set_border_width(GTK_CONTAINER(prod_vbox), 10);
-            gtk_box_set_homogeneous(GTK_BOX(prod_vbox), FALSE);
-            gtk_container_add(GTK_CONTAINER(content_area), prod_vbox);
+                    GtkWidget *label_nome = gtk_label_new(produto_atual->nome);
+                    gtk_widget_set_hexpand(label_nome, TRUE);
+                    gtk_box_pack_start(GTK_BOX(prod_box), label_nome, FALSE, FALSE, 5);
 
-            // Adicionar cor de fundo
-            set_background_color(prod_vbox, "#F0DBC0");
+                    GtkWidget *delete_button = gtk_button_new_with_label("Del");
+                    gtk_widget_set_name(delete_button, "delete-button");
+                    gtk_box_pack_start(GTK_BOX(prod_box), delete_button, FALSE, FALSE, 5);
 
-            // Iterar sobre os produtos do cliente e adicioná-los à vbox
-            Produto *produto_atual = cliente_atual->produtos;
-            while (produto_atual != NULL)
-            {
-                GtkWidget *produto_label = gtk_label_new(produto_atual->nome);
-                gtk_box_pack_start(GTK_BOX(prod_vbox), produto_label, FALSE, FALSE, 5);
-                produto_atual = produto_atual->prox;
+                    // Você precisará implementar a função on_delete_produto_button_clicked
+                    g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_produto_button_clicked), produto_atual);
+
+                    const gchar *buttons_css =
+                        "#delete-button { "
+                        "background-color: red; "
+                        "border-radius: 8px; "
+                        "padding: 5px 10px; "
+                        "transition: background-color 0.3s ease; "
+                        "}"
+                        "#delete-button:hover { "
+                        "background-color: darkred; "
+                        "}";
+
+                    apply_css(delete_button, buttons_css);
+
+                    produto_atual = produto_atual->prox;
+                }
+
+                gtk_widget_show_all(dialog);
             }
-
-            gtk_widget_show_all(dialog);
         }
         else
         {
@@ -1327,4 +1333,41 @@ void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
     }
 
     gtk_widget_destroy(cpf_dialog);
+}
+
+void on_delete_produto_button_clicked(GtkButton *button, gpointer user_data)
+{
+    Produto *produto = (Produto *)user_data;
+
+    // Aqui você deve adicionar a lógica para remover o produto da lista do cliente
+    // Atualize a lista de produtos do cliente e libere a memória do produto
+
+    // Exemplo de remoção de produto da lista (ajuste conforme sua estrutura de dados):
+    Cliente *cliente = lista_clientes;
+    while (cliente != NULL)
+    {
+        Produto *anterior = NULL;
+        Produto *atual = cliente->produtos;
+        while (atual != NULL)
+        {
+            if (atual == produto)
+            {
+                if (anterior == NULL)
+                {
+                    cliente->produtos = atual->prox;
+                }
+                else
+                {
+                    anterior->prox = atual->prox;
+                }
+                free(atual);
+                gtk_widget_destroy(GTK_WIDGET(gtk_widget_get_parent(GTK_WIDGET(button))));
+                printf("Produto removido.\n");
+                return;
+            }
+            anterior = atual;
+            atual = atual->prox;
+        }
+        cliente = cliente->prox;
+    }
 }
