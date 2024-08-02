@@ -18,6 +18,10 @@ Cliente *cliente_atual = NULL;
 GtkWidget *dialog = NULL;
 GtkWidget *nome_label, *cpf_label, *estado_label, *cidade_label, *rua_label, *numero_label, *telefone_label, *email_label;
 
+TransportadoraFila *fila_devolucao = NULL;
+
+
+
 
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
@@ -112,12 +116,42 @@ void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
     const char *telefone = gtk_entry_get_text(GTK_ENTRY(form_data->entry_telefone));
     const char *email = gtk_entry_get_text(GTK_ENTRY(form_data->entry_email));
 
+    // Verificar se todos os campos foram preenchidos
+    if (g_strcmp0(nome, "") == 0 || g_strcmp0(cpf, "") == 0 ||
+        g_strcmp0(estado, "") == 0 || g_strcmp0(cidade, "") == 0 ||
+        g_strcmp0(rua, "") == 0 || g_strcmp0(numero, "") == 0 ||
+        g_strcmp0(telefone, "") == 0 || g_strcmp0(email, "") == 0)
+    {
+        GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Todos os campos devem ser preenchidos!");
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        return;
+    }
+
+    // Exibir informações do cliente no console
     printf("Informações Pessoais:\nNome: %s\nCPF: %s\n", nome, cpf);
     printf("Endereço:\nEstado: %s\nCidade: %s\nRua: %s\nNúmero: %s\n", estado, cidade, rua, numero);
     printf("Contato:\nTelefone: %s\nEmail: %s\n", telefone, email);
 
+    // Cadastrar o cliente
     cadastrar_cliente(nome, cpf, estado, cidade, rua, atoi(numero), telefone, email);
+
+    // Limpar os campos de entrada
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_nome), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_cpf), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_estado), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_cidade), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_rua), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_numero), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_telefone), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_email), "");
+
+    // Mostrar popup de sucesso
+    GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Cliente cadastrado com sucesso!");
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
+
 
 void show_cadastro_cliente(GtkButton *button, gpointer user_data)
 {
@@ -256,7 +290,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     button_devolucoes = gtk_button_new_with_label("Devoluções");
     gtk_widget_set_hexpand(button_devolucoes, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_devolucoes, 2, 0, 1, 1);
-    // g_signal_connect(button_devolucoes, "clicked", G_CALLBACK(on_devolucoes_clicked), NULL);
+    g_signal_connect(button_devolucoes, "clicked", G_CALLBACK(listar_clientes_fila_devolucao), NULL);
 
     button_pontuacao = gtk_button_new_with_label("Pontuação");
     gtk_widget_set_hexpand(button_pontuacao, TRUE);
@@ -314,8 +348,30 @@ void on_pontuacao_clicked(GtkButton *button, gpointer user_data)
 
 // ##################################################### DEVOLUÇÕES #####################################################
 // exibir as pessoas que tiveram produtos devolvidos, e seus respectivos produtos
+void mostrar_popup_vazio(GtkWidget *parent) {
+    GtkWidget *dialog;
+    dialog = gtk_message_dialog_new(GTK_WINDOW(parent),
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "A lista de devolução está vazia.");
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
 
+void listar_clientes_fila_devolucao(GtkWidget *box, Devolucao *fila_devolucao)
+{
 
+    (void)box;
+
+    if (fila_devolucao == NULL || fila_devolucao->ini == NULL)
+    {
+        mostrar_popup_vazio(box);
+        return;
+    }
+
+    printf("Listando clientes na fila de devolução...\n");
+}
 
 
 // ###################################################### EXIBIR CLIENTES ######################################################
@@ -1208,9 +1264,9 @@ void concluir_entrega_volta()
     printf("Entrega na volta realizada com sucesso.\n");
 }
 
-void adicionar_lista_devolucao()
-{
+void adicionar_lista_devolucao() {
     if (cliente_atual == NULL) {
+        printf("Erro: Cliente atual não definido.\n");
         return;
     }
 
