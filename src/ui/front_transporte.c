@@ -18,6 +18,10 @@ Cliente *cliente_atual = NULL;
 GtkWidget *dialog = NULL;
 GtkWidget *nome_label, *cpf_label, *estado_label, *cidade_label, *rua_label, *numero_label, *telefone_label, *email_label;
 
+TransportadoraFila *fila_devolucao = NULL;
+
+
+
 
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
@@ -112,12 +116,42 @@ void on_confirm_button_clicked(GtkButton *button, gpointer user_data)
     const char *telefone = gtk_entry_get_text(GTK_ENTRY(form_data->entry_telefone));
     const char *email = gtk_entry_get_text(GTK_ENTRY(form_data->entry_email));
 
+    // Verificar se todos os campos foram preenchidos
+    if (g_strcmp0(nome, "") == 0 || g_strcmp0(cpf, "") == 0 ||
+        g_strcmp0(estado, "") == 0 || g_strcmp0(cidade, "") == 0 ||
+        g_strcmp0(rua, "") == 0 || g_strcmp0(numero, "") == 0 ||
+        g_strcmp0(telefone, "") == 0 || g_strcmp0(email, "") == 0)
+    {
+        GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Todos os campos devem ser preenchidos!");
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        return;
+    }
+
+    // Exibir informações do cliente no console
     printf("Informações Pessoais:\nNome: %s\nCPF: %s\n", nome, cpf);
     printf("Endereço:\nEstado: %s\nCidade: %s\nRua: %s\nNúmero: %s\n", estado, cidade, rua, numero);
     printf("Contato:\nTelefone: %s\nEmail: %s\n", telefone, email);
 
+    // Cadastrar o cliente
     cadastrar_cliente(nome, cpf, estado, cidade, rua, atoi(numero), telefone, email);
+
+    // Limpar os campos de entrada
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_nome), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_cpf), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_estado), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_cidade), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_rua), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_numero), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_telefone), "");
+    gtk_entry_set_text(GTK_ENTRY(form_data->entry_email), "");
+
+    // Mostrar popup de sucesso
+    GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Cliente cadastrado com sucesso!");
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
+
 
 void show_cadastro_cliente(GtkButton *button, gpointer user_data)
 {
@@ -256,6 +290,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     button_devolucoes = gtk_button_new_with_label("Devoluções");
     gtk_widget_set_hexpand(button_devolucoes, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_devolucoes, 2, 0, 1, 1);
+    g_signal_connect(button_devolucoes, "clicked", G_CALLBACK(listar_clientes_fila_devolucao), NULL);
 
     button_pontuacao = gtk_button_new_with_label("Pontuação");
     gtk_widget_set_hexpand(button_pontuacao, TRUE);
@@ -282,7 +317,6 @@ void create_main_window(GtkApplication *app, gpointer user_data)
 
 
 // ###################################### PONTUAÇÃO ######################################
-// apenas faça uma janela de 200x200: Pontuação: transpotadora->score
 void on_pontuacao_clicked(GtkButton *button, gpointer user_data)
 {
     (void)button;
@@ -311,6 +345,34 @@ void on_pontuacao_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_show_all(pontuacao_window);
 
 }
+
+// ##################################################### DEVOLUÇÕES #####################################################
+// exibir as pessoas que tiveram produtos devolvidos, e seus respectivos produtos
+void mostrar_popup_vazio(GtkWidget *parent) {
+    GtkWidget *dialog;
+    dialog = gtk_message_dialog_new(GTK_WINDOW(parent),
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "A lista de devolução está vazia.");
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
+
+void listar_clientes_fila_devolucao(GtkWidget *box, Devolucao *fila_devolucao)
+{
+
+    (void)box;
+
+    if (fila_devolucao == NULL || fila_devolucao->ini == NULL)
+    {
+        mostrar_popup_vazio(box);
+        return;
+    }
+
+    printf("Listando clientes na fila de devolução...\n");
+}
+
 
 // ###################################################### EXIBIR CLIENTES ######################################################
 
@@ -511,6 +573,26 @@ void on_more_button_clicked(GtkButton *button, gpointer user_data)
 }
 
 // ############################# GERENCIAR TRANSPORTADORA #############################
+GtkWidget *button_iniciar_rota;
+GtkWidget *button_adicionar_cliente;
+GtkWidget *button_adicionar_produto;
+GtkWidget *button_mostrar_fila;
+GtkWidget *button_concluir_rota;
+GtkWidget *button_entrega_ida;
+GtkWidget *button_entrega_volta;
+GtkWidget *button_exibir_produtos;
+
+void toggle_buttons(gboolean state)
+{
+    gtk_widget_set_sensitive(button_adicionar_cliente, state);
+    gtk_widget_set_sensitive(button_adicionar_produto, state);
+    gtk_widget_set_sensitive(button_mostrar_fila, state);
+    gtk_widget_set_sensitive(button_concluir_rota, state);
+    gtk_widget_set_sensitive(button_entrega_ida, state);
+    gtk_widget_set_sensitive(button_entrega_volta, state);
+    gtk_widget_set_sensitive(button_exibir_produtos, state);
+}
+
 void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
 {
     (void)button;
@@ -518,74 +600,72 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
 
     GtkWidget *transport_window;
     GtkWidget *transport_vbox;
-    GtkWidget *transport_grid;
-    GtkWidget *button_iniciar_rota;
-    GtkWidget *button_adicionar_cliente;
-    GtkWidget *button_adicionar_produto;
-    GtkWidget *button_mostrar_fila;
-    GtkWidget *button_concluir_fila;
-    GtkWidget *button_concluir_rota;
-    GtkWidget *button_entrega_ida;
-    GtkWidget *button_entrega_volta;
-    GtkWidget *button_exibir_produtos;
-    GtkWidget *empty_space;
+    GtkWidget *top_hbox;
+    GtkWidget *bottom_grid;
 
     transport_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(transport_window), "Gerenciar Transportadora");
-    gtk_window_set_default_size(GTK_WINDOW(transport_window), CLIENT_WINDOW_WIDTH, CLIENT_WINDOW_HEIGHT);
+    gtk_window_set_default_size(GTK_WINDOW(transport_window), 600, 800);
 
-    transport_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    transport_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
     gtk_container_add(GTK_CONTAINER(transport_window), transport_vbox);
 
-    transport_grid = gtk_grid_new();
-    gtk_grid_set_column_spacing(GTK_GRID(transport_grid), 10);
-    gtk_grid_set_row_spacing(GTK_GRID(transport_grid), 10);
-    gtk_box_pack_start(GTK_BOX(transport_vbox), transport_grid, FALSE, FALSE, 10);
+    // Caixa horizontal para os botões "Iniciar Rota" e "Concluir Rota"
+    top_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
+    gtk_box_pack_start(GTK_BOX(transport_vbox), top_hbox, FALSE, FALSE, 20);
 
     button_iniciar_rota = gtk_button_new_with_label("Iniciar Rota");
-    gtk_widget_set_hexpand(button_iniciar_rota, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_iniciar_rota, 0, 0, 1, 1);
+    gtk_box_pack_start(GTK_BOX(top_hbox), button_iniciar_rota, TRUE, TRUE, 20);
     g_signal_connect(button_iniciar_rota, "clicked", G_CALLBACK(on_iniciar_rota_clicked), NULL);
+
+    button_concluir_rota = gtk_button_new_with_label("Concluir Rota");
+    gtk_box_pack_start(GTK_BOX(top_hbox), button_concluir_rota, TRUE, TRUE, 20);
+    g_signal_connect(button_concluir_rota, "clicked", G_CALLBACK(on_concluir_rota_clicked), NULL);
+
+    // Grid para os outros botões
+    bottom_grid = gtk_grid_new();
+    gtk_grid_set_column_spacing(GTK_GRID(bottom_grid), 20);
+    gtk_grid_set_row_spacing(GTK_GRID(bottom_grid), 20);
+    gtk_box_pack_start(GTK_BOX(transport_vbox), bottom_grid, TRUE, TRUE, 20);
 
     button_adicionar_cliente = gtk_button_new_with_label("Adicionar Cliente");
     gtk_widget_set_hexpand(button_adicionar_cliente, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_adicionar_cliente, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(bottom_grid), button_adicionar_cliente, 0, 0, 1, 1);
     g_signal_connect(button_adicionar_cliente, "clicked", G_CALLBACK(on_adicionar_cliente_rota_clicked), NULL);
 
     button_adicionar_produto = gtk_button_new_with_label("Adicionar Produto");
     gtk_widget_set_hexpand(button_adicionar_produto, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_adicionar_produto, 2, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(bottom_grid), button_adicionar_produto, 1, 0, 1, 1);
     g_signal_connect(button_adicionar_produto, "clicked", G_CALLBACK(on_adicionar_produto_cliente_clicked), NULL);
 
     button_mostrar_fila = gtk_button_new_with_label("Mostrar Fila");
     gtk_widget_set_hexpand(button_mostrar_fila, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_mostrar_fila, 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(bottom_grid), button_mostrar_fila, 2, 0, 1, 1);
     g_signal_connect(button_mostrar_fila, "clicked", G_CALLBACK(on_mostrar_fila_clicked), NULL);
 
     button_exibir_produtos = gtk_button_new_with_label("Exibir Produtos");
     gtk_widget_set_hexpand(button_exibir_produtos, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_exibir_produtos, 1, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(bottom_grid), button_exibir_produtos, 0, 1, 1, 1);
     g_signal_connect(button_exibir_produtos, "clicked", G_CALLBACK(on_exibir_produtos_clicked), NULL);
-
-    button_concluir_rota = gtk_button_new_with_label("Concluir Rota");
-    gtk_widget_set_hexpand(button_concluir_rota, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_concluir_rota, 2, 1, 1, 1);
-    g_signal_connect(button_concluir_rota, "clicked", G_CALLBACK(on_concluir_rota_clicked), NULL);
 
     button_entrega_ida = gtk_button_new_with_label("Entrega Ida");
     gtk_widget_set_hexpand(button_entrega_ida, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_entrega_ida, 0, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(bottom_grid), button_entrega_ida, 1, 1, 1, 1);
     g_signal_connect(button_entrega_ida, "clicked", G_CALLBACK(on_entrega_ida_clicked), NULL);
 
     button_entrega_volta = gtk_button_new_with_label("Entrega Volta");
     gtk_widget_set_hexpand(button_entrega_volta, TRUE);
-    gtk_grid_attach(GTK_GRID(transport_grid), button_entrega_volta, 1, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(bottom_grid), button_entrega_volta, 2, 1, 1, 1);
     g_signal_connect(button_entrega_volta, "clicked", G_CALLBACK(on_entrega_volta_clicked), NULL);
 
-    empty_space = gtk_label_new("");
+    GtkWidget *empty_space = gtk_label_new("");
     gtk_box_pack_start(GTK_BOX(transport_vbox), empty_space, TRUE, TRUE, 0);
 
     gtk_widget_show_all(transport_window);
+
+    // Inicializar todos os botões como desativados, exceto "Iniciar Rota"
+    toggle_buttons(FALSE);
+    gtk_widget_set_sensitive(button_iniciar_rota, TRUE);
 
     // Inicialize a transportadora global
     if (transportadora == NULL) {
@@ -616,11 +696,12 @@ void on_gerenciar_transportadora_clicked(GtkButton *button, gpointer user_data)
     }
 }
 
-
 void on_iniciar_rota_clicked(GtkButton *button, gpointer user_data)
 {
     (void)button;
     (void)user_data;
+    toggle_buttons(TRUE);
+
 
     if (transportadora == NULL)
     {
@@ -628,9 +709,17 @@ void on_iniciar_rota_clicked(GtkButton *button, gpointer user_data)
         return;
     }
 
+
     ativar_rota(transportadora);
 }
 
+
+void show_message_dialog(GtkWindow *parent, GtkMessageType type, const gchar *message)
+{
+    GtkWidget *dialog = gtk_message_dialog_new(parent, GTK_DIALOG_MODAL, type, GTK_BUTTONS_OK, "%s", message);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
 
 void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
 {
@@ -639,7 +728,7 @@ void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
 
     if (transportadora == NULL)
     {
-        printf("Erro: Transportadora inválida.\n");
+        show_message_dialog(NULL, GTK_MESSAGE_ERROR, "Erro: Transportadora inválida.");
         return;
     }
 
@@ -675,16 +764,21 @@ void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
         Cliente *buscado = buscarClientePorCPF(cpf);
 
         if (buscado == NULL) {
-            printf("Cliente com CPF %s não encontrado.\n", cpf);
+            gchar *message = g_strdup_printf("Cliente com CPF %s não encontrado.", cpf);
+            show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+            g_free(message);
         } else {
             // Cadastrar o cliente na rota
-            printf("Cliente encontrado: %s\n", buscado->nome);
+            gchar *message = g_strdup_printf("Cliente encontrado: %s\n", buscado->nome);
+            show_message_dialog(NULL, GTK_MESSAGE_INFO, message);
+            g_free(message);
             cadastrar_cliente_rota(transportadora, buscado);
         }
     }
 
     gtk_widget_destroy(dialog);
 }
+
 
 void on_pesquisar_cliente()
 {
@@ -719,10 +813,14 @@ void on_pesquisar_cliente()
         Cliente *buscado = buscarClientePorCPF(cpf);
 
         if (buscado == NULL) {
-            printf("Cliente com CPF %s não encontrado.\n", cpf);
+            gchar *message = g_strdup_printf("Cliente com CPF %s não encontrado.", cpf);
+            show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+            g_free(message);
         } else {
             // Exibir as informações do cliente
-            printf("Cliente encontrado: %s\n", buscado->nome);
+            gchar *message = g_strdup_printf("Cliente encontrado: %s\n", buscado->nome);
+            show_message_dialog(NULL, GTK_MESSAGE_INFO, message);
+            g_free(message);
             on_more_button_clicked(NULL, buscado);
         }
     }
@@ -782,9 +880,13 @@ void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
         Cliente *buscado = buscarClientePorCPF(cpf);
 
         if (buscado == NULL) {
-            printf("Cliente com CPF %s não encontrado.\n", cpf);
+            gchar *message = g_strdup_printf("Cliente com CPF %s não encontrado.", cpf);
+            show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+            g_free(message);
         } else {
-            // Cadastrar o produto para o cliente
+            gchar *message = g_strdup_printf("Cliente encontrado: %s\n", buscado->nome);
+            show_message_dialog(NULL, GTK_MESSAGE_INFO, message);
+            g_free(message);
             cadastrar_produto_cliente(transportadora, buscado, id, nome);
         }
     }
@@ -803,7 +905,9 @@ void on_mostrar_fila_clicked(GtkButton *button, gpointer user_data)
 {
     if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa1 == NULL)
     {
-        printf("Erro: Fila de clientes vazia ou transportadora não inicializada.\n");
+        gchar *message = "Erro: Nenhum cliente na fila.";
+        show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+        g_free(message);
         return;
     }
 
@@ -874,6 +978,9 @@ void on_mostrar_fila_clicked(GtkButton *button, gpointer user_data)
 void exibir_cliente_atual()
 {
     if (cliente_atual == NULL) {
+        gchar *message = "Erro: Cliente atual é NULL.";
+        show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+        g_free(message);
         return;
     }
 
@@ -934,9 +1041,13 @@ void on_anterior_cliente_clicked(GtkButton *button, gpointer user_data)
 
 void on_concluir_rota_clicked()
 {
+    toggle_buttons(FALSE);
+
     if (transportadora == NULL || transportadora->rota_on == NULL)
     {
-        printf("Erro: Transportadora ou rota não inicializada.\n");
+        gchar *message = "Erro: Transportadora ou rota não inicializada.";
+        show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+        g_free(message);
         return;
     }
 
@@ -950,6 +1061,8 @@ void on_sim_button_clicked_ida(GtkButton *button, gpointer user_data)
     score += 5;
     transportadora->score = score;
     concluir_entrega_ida();
+
+    on_exibir_produtos_clicked(NULL, NULL);
 
 }
 
@@ -965,7 +1078,9 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
 {
     if (transportadora == NULL || transportadora->rota_on == NULL || transportadora->rota_on->tentativa1 == NULL)
     {
-        printf("Erro: Fila de clientes vazia ou transportadora não inicializada.\n");
+        gchar *message = "Erro: Fila de clientes vazia ou transportadora não inicializada.";
+        show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+        g_free(message);
         return;
     }
 
@@ -1074,7 +1189,6 @@ void tentar_novamente_entrega_ida()
     cliente_atual->prox = NULL;
     cliente_atual = transportadora->rota_on->tentativa1;
 
-    printf("Entrega não realizada. Tentativa adicionada para segunda tentativa.\n");
 }
 
 void on_sim_button_clicked_volta(GtkButton *button, gpointer user_data)
@@ -1083,6 +1197,9 @@ void on_sim_button_clicked_volta(GtkButton *button, gpointer user_data)
     gtk_widget_destroy(dialog);
     score += 3;
     transportadora->score = score;
+
+    on_exibir_produtos_clicked(NULL, NULL);
+
     concluir_entrega_volta();
 }
 
@@ -1197,9 +1314,9 @@ void concluir_entrega_volta()
     printf("Entrega na volta realizada com sucesso.\n");
 }
 
-void adicionar_lista_devolucao()
-{
+void adicionar_lista_devolucao() {
     if (cliente_atual == NULL) {
+        printf("Erro: Cliente atual não definido.\n");
         return;
     }
 

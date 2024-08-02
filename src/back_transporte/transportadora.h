@@ -62,7 +62,7 @@ typedef struct Devolucao {
 } Devolucao;
 
 typedef struct TransportadoraFila {
-    Rota *rota_on;
+    void *rota_on;
     Devolucao *fila_devolucao;
 } TransportadoraFila;
 
