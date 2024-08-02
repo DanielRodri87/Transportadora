@@ -256,6 +256,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     button_devolucoes = gtk_button_new_with_label("Devoluções");
     gtk_widget_set_hexpand(button_devolucoes, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_devolucoes, 2, 0, 1, 1);
+    // g_signal_connect(button_devolucoes, "clicked", G_CALLBACK(on_devolucoes_clicked), NULL);
 
     button_pontuacao = gtk_button_new_with_label("Pontuação");
     gtk_widget_set_hexpand(button_pontuacao, TRUE);
@@ -282,7 +283,6 @@ void create_main_window(GtkApplication *app, gpointer user_data)
 
 
 // ###################################### PONTUAÇÃO ######################################
-// apenas faça uma janela de 200x200: Pontuação: transpotadora->score
 void on_pontuacao_clicked(GtkButton *button, gpointer user_data)
 {
     (void)button;
@@ -311,6 +311,12 @@ void on_pontuacao_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_show_all(pontuacao_window);
 
 }
+
+// ##################################################### DEVOLUÇÕES #####################################################
+// exibir as pessoas que tiveram produtos devolvidos, e seus respectivos produtos
+
+
+
 
 // ###################################################### EXIBIR CLIENTES ######################################################
 
@@ -951,6 +957,8 @@ void on_sim_button_clicked_ida(GtkButton *button, gpointer user_data)
     transportadora->score = score;
     concluir_entrega_ida();
 
+    on_exibir_produtos_clicked(NULL, NULL);
+
 }
 
 // Função chamada quando o botão Não é clicado
@@ -1083,6 +1091,9 @@ void on_sim_button_clicked_volta(GtkButton *button, gpointer user_data)
     gtk_widget_destroy(dialog);
     score += 3;
     transportadora->score = score;
+
+    on_exibir_produtos_clicked(NULL, NULL);
+
     concluir_entrega_volta();
 }
 

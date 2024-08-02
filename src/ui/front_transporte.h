@@ -34,6 +34,7 @@ void concluir_entrega_ida();
 void tentar_novamente_entrega_ida();
 void on_delete_produto_button_clicked(GtkButton *button, gpointer user_data);
 void on_pontuacao_clicked(GtkButton *button, gpointer user_data);
+void on_ok_button_clicked(GtkButton *button, gpointer user_data);
 
 
 #endif // FRONT_TRANSPORTE_H
