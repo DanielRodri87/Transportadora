@@ -32,7 +32,10 @@ void exibir_cliente_atual();
 void on_mostrar_fila_clicked(GtkButton *button, gpointer user_data);
 void on_pesquisar_cliente();
 
-void listar_clientes_fila_devolucao(GtkWidget *box, Devolucao *fila_devolucao);
+void adicionar_lista_devolucao();
+void inicializar_fila_devolucao();
+
+void listar_clientes_fila_devolucao();
 void concluir_entrega_ida();
 void tentar_novamente_entrega_ida();
 void on_delete_produto_button_clicked(GtkButton *button, gpointer user_data);
