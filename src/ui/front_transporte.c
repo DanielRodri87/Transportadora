@@ -18,10 +18,6 @@ Cliente *cliente_atual = NULL;
 GtkWidget *dialog = NULL;
 GtkWidget *nome_label, *cpf_label, *estado_label, *cidade_label, *rua_label, *numero_label, *telefone_label, *email_label;
 
-TransportadoraFila *fila_devolucao = NULL;
-
-
-
 
 // ###################################### CADASTRAR CLIENTES ######################################
 void apply_css(GtkWidget *widget, const gchar *css)
@@ -256,62 +252,69 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     GtkWidget *logo_box;
     GtkCssProvider *cssProvider;
 
-    (void)user_data;
+    (void)user_data;  // Suprimir advertência sobre o parâmetro não utilizado
 
+    // Carregar o CSS
     cssProvider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(cssProvider, "/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/style.css", NULL);
-    // gtk_css_provider_load_from_path(/home/ritar0drigues/Transportadora/Transportadora-1/src/ui/style.css", NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
                                               GTK_STYLE_PROVIDER(cssProvider),
                                               GTK_STYLE_PROVIDER_PRIORITY_USER);
 
+    // Criar a janela principal
     window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Transportadora");
     gtk_window_set_default_size(GTK_WINDOW(window), WINDOW_WIDTH, WINDOW_HEIGHT);
 
+    // Criar uma caixa vertical para organizar os widgets
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
+    // Criar uma grade para os botões
     grid = gtk_grid_new();
     gtk_box_pack_start(GTK_BOX(vbox), grid, TRUE, TRUE, 0);
     gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
     gtk_grid_set_row_spacing(GTK_GRID(grid), 0);
 
+    // Botão para gerenciar clientes
     button_clientes = gtk_button_new_with_label("Gerenciar Clientes");
     gtk_widget_set_hexpand(button_clientes, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_clientes, 0, 0, 1, 1);
     g_signal_connect(button_clientes, "clicked", G_CALLBACK(on_gerenciar_clientes_clicked), NULL);
 
+    // Botão para gerenciar entregas
     button_entregas = gtk_button_new_with_label("Gerenciar Entregas");
     gtk_widget_set_hexpand(button_entregas, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_entregas, 1, 0, 1, 1);
     g_signal_connect(button_entregas, "clicked", G_CALLBACK(on_gerenciar_transportadora_clicked), NULL);
 
+    // Botão para devoluções
     button_devolucoes = gtk_button_new_with_label("Devoluções");
     gtk_widget_set_hexpand(button_devolucoes, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_devolucoes, 2, 0, 1, 1);
     g_signal_connect(button_devolucoes, "clicked", G_CALLBACK(listar_clientes_fila_devolucao), NULL);
 
+    // Botão para pontuação
     button_pontuacao = gtk_button_new_with_label("Pontuação");
     gtk_widget_set_hexpand(button_pontuacao, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_pontuacao, 3, 0, 1, 1);
     g_signal_connect(button_pontuacao, "clicked", G_CALLBACK(on_pontuacao_clicked), NULL);
 
+    // Botão para sair da aplicação
     button_sair = gtk_button_new_with_label("Sair");
     gtk_widget_set_hexpand(button_sair, TRUE);
-    gtk_grid_attach(GTK_GRID(grid), button_sair, 5, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), button_sair, 4, 0, 1, 1);
+    g_signal_connect(button_sair, "clicked", G_CALLBACK(gtk_main_quit), NULL);
 
+    // Adicionar imagem do logo
     logo_image = gtk_image_new_from_file("/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/logo_transp.png");
-    // logo_image = gtk_image_new_from_file("/home/ritar0drigues/Transportadora/Transportadora-1/src/ui/logo_transp.png");
-
     gtk_image_set_pixel_size(GTK_IMAGE(logo_image), 250);
 
     logo_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(logo_box), logo_image, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), logo_box, TRUE, TRUE, 0);
 
-    g_signal_connect(button_sair, "clicked", G_CALLBACK(gtk_main_quit), NULL);
-
+    // Mostrar todos os widgets
     gtk_widget_show_all(window);
 }
 
@@ -359,19 +362,155 @@ void mostrar_popup_vazio(GtkWidget *parent) {
     gtk_widget_destroy(dialog);
 }
 
-void listar_clientes_fila_devolucao(GtkWidget *box, Devolucao *fila_devolucao)
-{
-
-    (void)box;
-
-    if (fila_devolucao == NULL || fila_devolucao->ini == NULL)
-    {
-        mostrar_popup_vazio(box);
+void remover_cliente_fila_devolucao(Cliente *cliente) {
+    if (fila->fila_devolucao->ini == NULL) {
+        printf("Erro: Fila de devolução vazia.\n");
         return;
     }
 
-    printf("Listando clientes na fila de devolução...\n");
+    ListaDevolucao *atual = fila->fila_devolucao->ini;
+    ListaDevolucao *anterior = NULL;
+
+    // Percorrer a fila para encontrar o cliente
+    while (atual != NULL) {
+        if (atual->cliente == cliente) {
+            if (anterior == NULL) {
+                // O cliente está no início da fila
+                fila->fila_devolucao->ini = atual->prox;
+            } else {
+                // O cliente está no meio ou no final da fila
+                anterior->prox = atual->prox;
+            }
+
+            if (fila->fila_devolucao->fim == atual) {
+                // O cliente está no final da fila
+                fila->fila_devolucao->fim = anterior;
+            }
+
+            free(atual);
+            printf("Cliente removido da fila de devolução: %s\n", cliente->nome);
+            return;
+        }
+
+        anterior = atual;
+        atual = atual->prox;
+    }
+
+    printf("Cliente não encontrado na fila de devolução.\n");
 }
+
+
+void on_devolver_button_clicked(GtkButton *button, gpointer user_data)
+{
+    Cliente *cliente = (Cliente *)g_object_get_data(G_OBJECT(button), "cliente");
+    Devolucao *fila_devolucao = (Devolucao *)g_object_get_data(G_OBJECT(button), "fila_devolucao");
+
+    GtkWidget *dialog = GTK_WIDGET(user_data);
+    gtk_widget_destroy(dialog);
+
+    // Remover o cliente da fila de devolução
+    remover_cliente_fila_devolucao(cliente);
+
+    // Aqui você pode adicionar a lógica para exibir os produtos do próximo cliente, se necessário
+    on_exibir_produtos_clicked(NULL, NULL);
+}
+
+
+void listar_clientes_fila_devolucao() {
+    if (fila->fila_devolucao->ini == NULL) {
+        gchar *message = "Erro: Fila de devolução vazia.";
+        show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
+        return;
+    }
+
+    ListaDevolucao *cliente_atual = fila->fila_devolucao->ini;
+
+    while (cliente_atual != NULL) {
+        printf("Listando cliente: %s\n", cliente_atual->cliente->nome);
+
+        // Criar uma janela de diálogo para exibir as informações do cliente e perguntar sobre a devolução
+        GtkWidget *dialog = gtk_dialog_new_with_buttons("Devolução de Produto",
+                                                         NULL,
+                                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                         NULL);
+
+        gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 400);
+
+        GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+        // Caixa vertical para organizar os labels
+        GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+        gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
+        gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+        gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+        // Adicionar cor de fundo
+        set_background_color(vbox, "#F0DBC0");
+
+        // Criar e adicionar um título ao diálogo
+        GtkWidget *titulo_label = gtk_label_new("Informações do Cliente");
+        gtk_widget_set_name(titulo_label, "titulo-label");
+        gtk_box_pack_start(GTK_BOX(vbox), titulo_label, FALSE, FALSE, 10);
+
+        // Labels para exibir as informações do cliente
+        GtkWidget *nome_label = gtk_label_new(cliente_atual->cliente->nome);
+        GtkWidget *cpf_label = gtk_label_new(cliente_atual->cliente->cpf);
+        GtkWidget *estado_label = gtk_label_new(cliente_atual->cliente->estado);
+        GtkWidget *cidade_label = gtk_label_new(cliente_atual->cliente->cidade);
+        GtkWidget *rua_label = gtk_label_new(cliente_atual->cliente->rua);
+        GtkWidget *numero_label = gtk_label_new(g_strdup_printf("%d", cliente_atual->cliente->numero));
+        GtkWidget *telefone_label = gtk_label_new(cliente_atual->cliente->telefone);
+        GtkWidget *email_label = gtk_label_new(cliente_atual->cliente->email);
+
+        // Adicionar labels na vbox
+        gtk_box_pack_start(GTK_BOX(vbox), nome_label, FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(vbox), cpf_label, FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(vbox), estado_label, FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(vbox), cidade_label, FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(vbox), rua_label, FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(vbox), numero_label, FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(vbox), telefone_label, FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(vbox), email_label, FALSE, FALSE, 5);
+
+        // Pergunta de confirmação
+        GtkWidget *pergunta_label = gtk_label_new("Deseja devolver os produtos?");
+        gtk_widget_set_name(pergunta_label, "pergunta-label");
+        gtk_box_pack_start(GTK_BOX(vbox), pergunta_label, FALSE, FALSE, 20);
+
+        // Caixa horizontal para o botão
+        GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
+        gtk_box_pack_start(GTK_BOX(vbox), button_box, FALSE, FALSE, 10);
+
+        // Botão Devolver
+        GtkWidget *devolver_button = gtk_button_new_with_label("Devolver");
+        gtk_widget_set_name(devolver_button, "devolver-button");
+        g_signal_connect(devolver_button, "clicked", G_CALLBACK(on_devolver_button_clicked), dialog);
+        gtk_box_pack_start(GTK_BOX(button_box), devolver_button, TRUE, TRUE, 10);
+
+        gtk_widget_show_all(dialog);
+
+        cliente_atual = cliente_atual->prox;
+    }
+}
+
+void inicializar_fila_devolucao()
+{
+    fila = (TransportadoraFila *)malloc(sizeof(TransportadoraFila));
+    if (fila == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para TransportadoraFila.\n");
+        return;
+    }
+    fila->fila_devolucao = (Devolucao *)malloc(sizeof(Devolucao));
+    if (fila->fila_devolucao == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para Devolucao.\n");
+        return;
+    }
+    fila->fila_devolucao->ini = NULL;
+    fila->fila_devolucao->fim = NULL;
+    printf("Fila de devolução inicializada.\n");
+}
+
 
 
 // ###################################################### EXIBIR CLIENTES ######################################################
@@ -766,12 +905,12 @@ void on_adicionar_cliente_rota_clicked(GtkButton *button, gpointer user_data)
         if (buscado == NULL) {
             gchar *message = g_strdup_printf("Cliente com CPF %s não encontrado.", cpf);
             show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
-            g_free(message);
+
         } else {
             // Cadastrar o cliente na rota
             gchar *message = g_strdup_printf("Cliente encontrado: %s\n", buscado->nome);
             show_message_dialog(NULL, GTK_MESSAGE_INFO, message);
-            g_free(message);
+
             cadastrar_cliente_rota(transportadora, buscado);
         }
     }
@@ -815,12 +954,12 @@ void on_pesquisar_cliente()
         if (buscado == NULL) {
             gchar *message = g_strdup_printf("Cliente com CPF %s não encontrado.", cpf);
             show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
-            g_free(message);
+
         } else {
             // Exibir as informações do cliente
             gchar *message = g_strdup_printf("Cliente encontrado: %s\n", buscado->nome);
             show_message_dialog(NULL, GTK_MESSAGE_INFO, message);
-            g_free(message);
+
             on_more_button_clicked(NULL, buscado);
         }
     }
@@ -882,11 +1021,11 @@ void on_adicionar_produto_cliente_clicked(GtkButton *button, gpointer user_data)
         if (buscado == NULL) {
             gchar *message = g_strdup_printf("Cliente com CPF %s não encontrado.", cpf);
             show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
-            g_free(message);
+
         } else {
             gchar *message = g_strdup_printf("Cliente encontrado: %s\n", buscado->nome);
             show_message_dialog(NULL, GTK_MESSAGE_INFO, message);
-            g_free(message);
+
             cadastrar_produto_cliente(transportadora, buscado, id, nome);
         }
     }
@@ -907,7 +1046,6 @@ void on_mostrar_fila_clicked(GtkButton *button, gpointer user_data)
     {
         gchar *message = "Erro: Nenhum cliente na fila.";
         show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
-        g_free(message);
         return;
     }
 
@@ -980,7 +1118,6 @@ void exibir_cliente_atual()
     if (cliente_atual == NULL) {
         gchar *message = "Erro: Cliente atual é NULL.";
         show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
-        g_free(message);
         return;
     }
 
@@ -1047,7 +1184,6 @@ void on_concluir_rota_clicked()
     {
         gchar *message = "Erro: Transportadora ou rota não inicializada.";
         show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
-        g_free(message);
         return;
     }
 
@@ -1080,7 +1216,6 @@ void on_entrega_ida_clicked(GtkButton *button, gpointer user_data)
     {
         gchar *message = "Erro: Fila de clientes vazia ou transportadora não inicializada.";
         show_message_dialog(NULL, GTK_MESSAGE_ERROR, message);
-        g_free(message);
         return;
     }
 
@@ -1320,6 +1455,12 @@ void adicionar_lista_devolucao() {
         return;
     }
 
+    // Verificar se fila_devolucao está inicializada
+    if (fila == NULL || fila->fila_devolucao == NULL) {
+        printf("Erro: Fila de devolução não inicializada.\n");
+        return;
+    }
+
     // Adicionar cliente à lista de devolução
     ListaDevolucao *novo_item = (ListaDevolucao *)malloc(sizeof(ListaDevolucao));
     if (novo_item == NULL) {
@@ -1337,27 +1478,10 @@ void adicionar_lista_devolucao() {
         fila->fila_devolucao->fim = novo_item;
     }
 
+    printf("Cliente adicionado à lista de devolução: %s\n", cliente_atual->nome);
     cliente_atual = NULL;
-    printf("Cliente adicionado à lista de devolução.\n");
 }
 
-// void exibir_cliente_atual()
-// {
-//     if (cliente_atual == NULL)
-//         return;
-
-//     // Atualiza os labels com as informações do cliente
-//     gtk_label_set_text(GTK_LABEL(nome_label), cliente_atual->nome);
-//     gtk_label_set_text(GTK_LABEL(cpf_label), cliente_atual->cpf);
-//     gtk_label_set_text(GTK_LABEL(estado_label), cliente_atual->estado);
-//     gtk_label_set_text(GTK_LABEL(cidade_label), cliente_atual->cidade);
-//     gtk_label_set_text(GTK_LABEL(rua_label), cliente_atual->rua);
-//     char numero_str[10];
-//     sprintf(numero_str, "%d", cliente_atual->numero);
-//     gtk_label_set_text(GTK_LABEL(numero_label), numero_str);
-//     gtk_label_set_text(GTK_LABEL(telefone_label), cliente_atual->telefone);
-//     gtk_label_set_text(GTK_LABEL(email_label), cliente_atual->email);
-// }
 
 void on_exibir_produtos_clicked(GtkButton *button, gpointer user_data)
 {
