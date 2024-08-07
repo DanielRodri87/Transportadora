@@ -304,7 +304,7 @@ void create_main_window(GtkApplication *app, gpointer user_data)
     button_sair = gtk_button_new_with_label("Sair");
     gtk_widget_set_hexpand(button_sair, TRUE);
     gtk_grid_attach(GTK_GRID(grid), button_sair, 4, 0, 1, 1);
-    g_signal_connect(button_sair, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(button_sair, "clicked", G_CALLBACK(gtk_window_close), window);
 
     // Adicionar imagem do logo
     logo_image = gtk_image_new_from_file("/mnt/c/Users/danie/OneDrive/Documentos/UFPI-2024.1/PROJETOS/Transportadora/src/ui/logo_transp.png");
